@@ -1,0 +1,28 @@
+{
+    "label"         : "A-SIGN Yellowcube Plugin v2.0",
+
+    "class"         : "sprite-application-icon-large",
+
+    "author"        : "A-SIGN GmbH",
+
+    "copyright"     : "(c) by A-SIGN",
+
+    "support"       : "entwicklung@a-sign.ch",
+
+    "version"       : "2.0",
+
+    "link"          : "http://www.a-sign.ch/",
+
+    "controller"    : "AsignYellowcube",
+    
+    "parent"        : "Marketing",
+
+    "action"        : "Index",
+
+    "compatibility" : {
+        "minimumVersion": "4.2.0",
+        "maximumVersion": null,
+        "blacklist": [
+        ]
+    }
+}
