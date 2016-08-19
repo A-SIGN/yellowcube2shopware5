@@ -230,9 +230,9 @@ class Shopware_Controllers_Backend_AsignYellowcube extends Shopware_Controllers_
         $data = array();
         foreach ($result as $key => $inventory) {
             // unserialize and get values
-            $inventory['stockvalue'] = $this->_iStockValue;
             $inventory['additional'] =  $this->getJsonEncodedData(unserialize($inventory["additional"]));
-
+            $inventory['stockvalue'] = $this->_iStockValue;
+            
             $data[] = $inventory;
         }
 
