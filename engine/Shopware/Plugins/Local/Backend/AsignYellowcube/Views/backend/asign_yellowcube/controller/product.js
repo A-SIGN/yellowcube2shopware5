@@ -2,16 +2,15 @@
  * This file defines controller for product
  *
  * @category  asign
- * @package   AsignYellowcube_v2.0_CE_5.1
+ * @package   AsignYellowcube
  * @author    entwicklung@a-sign.ch
  * @copyright A-Sign
- * @license   http://www.a-sign.ch/
- * @version   2.0
- * @link      http://www.a-sign.ch/
+ * @license   https://www.a-sign.ch/
+ * @version   2.1
+ * @link      https://www.a-sign.ch/
  * @see       Shopware.apps.AsignYellowcube.controller.Product
  * @since     File available since Release 1.0
  */
-
 Ext.define('Shopware.apps.AsignYellowcube.controller.Product', {
     /**
      * Extend from the standard ExtJS 4
@@ -420,7 +419,6 @@ Ext.define('Shopware.apps.AsignYellowcube.controller.Product', {
     updateYcResponse: function (optval, rowid) {
         var me = this;
         Ext.getCmp('mainWindow').setLoading(true);
-
         Ext.Ajax.request({
             url: "{url controller=AsignYellowcube action=sendArticles}",
             params: {
