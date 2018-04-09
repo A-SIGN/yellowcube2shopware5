@@ -837,4 +837,5 @@ class Shopware_Plugins_Backend_AsignYellowcube_Bootstrap extends Shopware_Compon
             break;
         }
     }
+
 }
