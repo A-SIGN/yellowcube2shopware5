@@ -19,6 +19,10 @@ Der Yellowcube Connector verbindet Shopware mit dem Warenhaussystem des Yellowcu
 
 ## Installation
 
-Das Modul unterstützt die Shopware-Version 5.0.1. Falls Ihr Shop eine spezielle Anpassung benötigt, stehen wir Ihnen sowohl bei der Installation, als auch bei der Anpassung des Moduls jederzeit zu Verfügung.
+Das Modul unterstützt die Shopware-Version 5.4.2. Kopieren sie den Ordner engine in ihr Shop Verzeichniss. 
+Das Plugin wird danach im Plug-In Manager sichtbar für die Installation und Aktivierung sein.
+
+Falls Ihr Shop eine spezielle Anpassung benötigt, stehen wir Ihnen sowohl bei der Installation, als auch bei der Anpassung des Moduls jederzeit zu Verfügung.
+
 Kontaktieren sie uns unter: info@a-sign.ch
 oder telefonisch unter +41 71 677 90 00
