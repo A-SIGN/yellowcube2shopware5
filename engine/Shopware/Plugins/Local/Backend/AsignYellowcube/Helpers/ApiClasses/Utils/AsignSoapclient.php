@@ -102,6 +102,7 @@ class AsignSoapclient extends \SoapClient
         $signedRequest = $wsse->saveXML();
         
         return parent::__doRequest($signedRequest, $location, $action, $version, $oneWay);
+
     }
 
     /**
@@ -112,6 +113,7 @@ class AsignSoapclient extends \SoapClient
      * @return mixed|void
      *
      * @throws YellowCubeException if a SOAP error occurs.
+     * @throws \Exception
      */
     public function __call($method, $args)
     {

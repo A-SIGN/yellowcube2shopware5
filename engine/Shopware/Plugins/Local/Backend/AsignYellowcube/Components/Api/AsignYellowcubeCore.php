@@ -485,7 +485,6 @@ class AsignYellowcubeCore
 
             // Value added information
             $oObject->Order->ValueAddedServices                         = new \stdClass();
-            $oObject->Order->ValueAddedServices->AdditionalService      = new \stdClass();
 
             // if the return operation
             if ($isReturn) {
@@ -493,13 +492,17 @@ class AsignYellowcubeCore
                 $sAdditionalShipping = "";
             } else {
                 $sBasicShipping = trim(reset($sShipping));
-                if (count($sShipping) > 0) {
+                if (count($sShipping) > 1) {
                     $sAdditionalShipping = trim(end($sShipping));
                 }
             }
 
             $oObject->Order->ValueAddedServices->AdditionalService->BasicShippingServices       = $sBasicShipping;
-            $oObject->Order->ValueAddedServices->AdditionalService->AdditionalShippingServices  = $sAdditionalShipping;
+
+            if (isset($sAdditionalShipping)) {
+                $oObject->Order->ValueAddedServices->AdditionalService = new \stdClass();
+                $oObject->Order->ValueAddedServices->AdditionalService->AdditionalShippingServices = $sAdditionalShipping;
+            }
 
             // order articles information
             $arrayOfObjects = array();
@@ -510,7 +513,8 @@ class AsignYellowcubeCore
             $iterator = 1;
             foreach ($oOrderArticles as $key=>$article) {
 
-                // if not set: use OXID > articles > Extended tab values
+                // if not set: use id > articles > Extended tab values
+                $aYCParams      = $article['ycparams'];
                 $sQuantityISO   = $aYCParams['sYellowCubeAlternateUnitISO'];
 
                 // set module default value
@@ -521,7 +525,7 @@ class AsignYellowcubeCore
                 $oObject->Order->OrderPositions->Position                   = new \stdClass();
                 $oObject->Order->OrderPositions->Position->PosNo            = $iterator;
                 $oObject->Order->OrderPositions->Position->ArticleNo        = $article['articleordernumber'];
-                $oObject->Order->OrderPositions->Position->EAN              = $article['ean'];
+                //$oObject->Order->OrderPositions->Position->EAN              = $article['ean'];
                 $oObject->Order->OrderPositions->Position->Plant            = $sPlantID;
                 $oObject->Order->OrderPositions->Position->Quantity         = $article['quantity'];
                 $oObject->Order->OrderPositions->Position->QuantityISO      = $sQuantityISO;

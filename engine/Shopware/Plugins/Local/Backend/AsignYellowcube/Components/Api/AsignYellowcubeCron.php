@@ -32,7 +32,7 @@ use Shopware\AsignYellowcube\Helpers\ApiClasses\AsignSoapClientApi;
 class AsignYellowcubeCron
 {    
     /** @var constants **/
-    const YCRESPONSE = 'ycResponse';
+    const YCRESPONSE    = 'ycResponse';
     const YCWABRESPONSE = 'ycWabResponse';
     const YCWARRESPONSE = 'ycWarResponse';
 
@@ -175,7 +175,7 @@ class AsignYellowcubeCron
                 foreach ($aArticles as $article) {                    
                     $artid = $article['id'];
                     $oDetails = $this->objProduct->getArticleDetails($article['id'], true);
-                    $iStatusCode = $this->getRecordedStatus($ordid, 'asign_yellowcube_product');
+                    $iStatusCode = $this->getRecordedStatus($artid, 'asign_yellowcube_product');
 
                     // if not 10 then insert the article
                     // execute the article object                    

@@ -170,6 +170,7 @@ class Repository extends ModelRepository
     {
         $sSql = "SELECT s_articles.name as `name`, s_articles_details.articleID, s_articles_details.weight, s_articles_details.length, s_articles_details.width, s_articles_details.height, s_articles_details.ordernumber, s_articles_details.ean, s_articles_details.instock FROM s_articles";
         $sSql .= " JOIN s_articles_details ON s_articles.id = s_articles_details.articleID";
+        $sSql .= " JOIN asign_yellowcube_product ON s_articles.id = asign_yellowcube_product.artid";
         $sSql .= " WHERE s_articles.id = '" . $artid . "' AND s_articles_details.kind = 1";
 
         // cron?
@@ -243,4 +244,33 @@ class Repository extends ModelRepository
 
         Shopware()->Db()->query($sQuery);
     }
+
+    /**
+     * Returns saved status from the saved data
+     *
+     * @param string $itemId Item id
+     * @param string $sTable Table name
+     *
+     * @param string $sColumn
+     * @return array
+     */
+    public function getYellowcubeReport($itemId, $sTable, $sColumn = 'ycResponse')
+    {
+    	if (!$sColumn) {
+            $sColumn = 'ycResponse';
+        }
+
+        $sQuery = "select `" . $sColumn . "` from `" . $sTable . "` where `artid` = '" . $itemId ."'";
+        $aComplete = Shopware()->Db()->fetchOne($sQuery);
+        $aResponse = unserialize($aComplete);
+
+        $aReturn = array();
+        if (!empty($aResponse)) {
+            foreach ($aResponse as $key => $result) {
+                $aReturn[$key] = $result;
+            }
+        }
+
+	}
+
 }
