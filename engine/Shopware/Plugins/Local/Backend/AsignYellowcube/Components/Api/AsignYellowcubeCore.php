@@ -21,13 +21,13 @@ namespace Shopware\AsignYellowcube\Components\Api;
 use Shopware\AsignYellowcube\Helpers\ApiClasses\AsignSoapClientApi;
 
 /**
-* Handles Yellowcube related functions
-*
-* @category Asign
-* @package  AsignYellowcube
-* @author   entwicklung@a-sign.ch
-* @link     http://www.a-sign.ch
-*/
+ * Handles Yellowcube related functions
+ *
+ * @category Asign
+ * @package  AsignYellowcube
+ * @author   entwicklung@a-sign.ch
+ * @link     http://www.a-sign.ch
+ */
 class AsignYellowcubeCore
 {
     /**
@@ -70,41 +70,41 @@ class AsignYellowcubeCore
     }
 
     /**
-	 * Returns timestamp value with date and time
-	 * Default Format: YmdHis
-	 *
-	 * @param string $sFormat Format of Timestamp
-	 *
-	 * @return string
-	 */
+     * Returns timestamp value with date and time
+     * Default Format: YmdHis
+     *
+     * @param string $sFormat Format of Timestamp
+     *
+     * @return string
+     */
     protected function generateTimestampValue($sFormat = 'YmdHis')
     {
         return date($sFormat);
     }
 
-	/**
-	 * Returns initial parameters used for request
-	 * Includes: Type, Sender, Receiver,Timestamp,
-	 * 			 OperatingMode, Version, CommType
-	 *
-	 * @param string $sType Type of request sent
-	 * E.g. WAB, ART, BAR, WAR
-	 *
-	 * @return array
-	 */
+    /**
+     * Returns initial parameters used for request
+     * Includes: Type, Sender, Receiver,Timestamp,
+     * 			 OperatingMode, Version, CommType
+     *
+     * @param string $sType Type of request sent
+     * E.g. WAB, ART, BAR, WAR
+     *
+     * @return array
+     */
     public function getInitialParams($sType)
     {
         $aParams = array(
-					'Type' 			=> $sType,
-					'Sender'		=> $this->oSoapApi->getSoapWsdlSender(),
-					'Receiver'		=> $this->oSoapApi->getSoapWsdlReceiver(),
-					'Timestamp'		=> (float)$this->generateTimestampValue(),//20141017000020,
-					'OperatingMode'	=> $this->oSoapApi->getSoapOperatingMode(),
-					'Version'		=> $this->oSoapApi->getSoapVersion(),
-					'CommType'		=> $this->oSoapApi->getCommType()
-				);
+            'Type' 			=> $sType,
+            'Sender'		=> $this->oSoapApi->getSoapWsdlSender(),
+            'Receiver'		=> $this->oSoapApi->getSoapWsdlReceiver(),
+            'Timestamp'		=> (float)$this->generateTimestampValue(),//20141017000020,
+            'OperatingMode'	=> $this->oSoapApi->getSoapOperatingMode(),
+            'Version'		=> $this->oSoapApi->getSoapVersion(),
+            'CommType'		=> $this->oSoapApi->getCommType()
+        );
 
-		return $aParams;
+        return $aParams;
     }
 
     /**
@@ -114,14 +114,14 @@ class AsignYellowcubeCore
      *
      * @return array
      */
-	public function getInventory()
-	{
+    public function getInventory()
+    {
         // get initial params...
         $aParams = $this->getInitialParams("BAR");
 
-		$oObject = new \stdClass();
+        $oObject = new \stdClass();
         $oObject->ControlReference = new \stdClass();
-		foreach ($aParams as $key => $param) {
+        foreach ($aParams as $key => $param) {
             $oObject->ControlReference->$key = $param;
         }
 
@@ -129,18 +129,17 @@ class AsignYellowcubeCore
         try{
             $aResponse = $this->oSoapApi->callFunction("GetInventory", $oObject);
             return(array(
-                            'success'   => true,
-                            'data'      => $aResponse
-                        ));
+                'success'   => true,
+                'data'      => $aResponse
+            ));
         } catch(Exception $soapex) {
             $this->oLogs->saveLogsData('getInventory', $soapex);
-			throw new Exception($soapex->getMessage());
             return(array(
-                            'success' => false,
-                            'message' => $soapex->getMessage()
-                        ));
+                'success' => false,
+                'message' => $soapex->getMessage()
+            ));
         }
-	}
+    }
 
     /**
      * Inserts article into YC master data
@@ -159,16 +158,16 @@ class AsignYellowcubeCore
             $aResponse = $this->oSoapApi->callFunction("InsertArticleMasterData", $oRequestData);
 
             return(array(
-                            'success'   => true,
-                            'data'      => $aResponse
-                        ));
+                'success'   => true,
+                'data'      => $aResponse
+            ));
         } catch(Exception $soapex) {
             $this->oLogs->saveLogsData('insertArticleMasterData', $soapex);
             throw new Exception($soapex->getMessage());
             return(array(
-                            'success' => false,
-                            'message' => $soapex->getMessage()
-                        ));
+                'success' => false,
+                'message' => $soapex->getMessage()
+            ));
         }
     }
 
@@ -213,9 +212,9 @@ class AsignYellowcubeCore
         } catch(Exception $soapex) {
             $this->oLogs->saveLogsData('getYCGeneralDataStatus', $soapex);
             return(array(
-                            'success' => false,
-                            'message' => $soapex->getMessage()
-                        ));
+                'success' => false,
+                'message' => $soapex->getMessage()
+            ));
         }
     }
 
@@ -374,15 +373,15 @@ class AsignYellowcubeCore
             try{
                 $aResponse = $this->oSoapApi->callFunction("CreateYCCustomerOrder", $oRequestData);
                 return(array(
-                                'success'   => true,
-                                'data'      => $aResponse
-                            ));
+                    'success'   => true,
+                    'data'      => $aResponse
+                ));
             } catch(Exception $soapex) {
                 $this->oLogs->saveLogsData('createYCCustomerOrder', $soapex);
                 return(array(
-                                'success' => false,
-                                'message' => $soapex->getMessage()
-                            ));
+                    'success' => false,
+                    'message' => $soapex->getMessage()
+                ));
             }
         }
     }
@@ -575,18 +574,18 @@ class AsignYellowcubeCore
                     $message = $this->getSnippetValue('engine/Shopware/Plugins/Local/Backend/AsignYellowcube', 'yellowcube/zip/message/nomatch');
                     $this->oLogs->saveLogsData('NOMATCH_ZIP_ERROR', $message, true);
                     return(array(
-                            'success' => false,
-                            'zcode'   => -2,
-                            'message' => $message
-                        ));
+                        'success' => false,
+                        'zcode'   => -2,
+                        'message' => $message
+                    ));
                 } elseif (preg_match('/[A-Za-z]/', $zipValue)) {
                     $message = $this->getSnippetValue('engine/Shopware/Plugins/Local/Backend/AsignYellowcube', 'yellowcube/zip/message/invalid');
                     $this->oLogs->saveLogsData('INVALID_ZIP_ERROR', $message, true);
                     return(array(
-                            'success' => false,
-                            'zcode'   => -3,
-                            'message' => $message
-                        ));
+                        'success' => false,
+                        'zcode'   => -3,
+                        'message' => $message
+                    ));
                 } else {
                     return $zipValue;
                 }
@@ -596,10 +595,10 @@ class AsignYellowcubeCore
         } catch (Exception $sEx) {
             $this->oLogs->saveLogsData('verifyZipStatus', $soapex);
             return(array(
-                        'success' => false,
-                        'message' => $sEx->getMessage(),
-                        'zcode'   => -4
-                    ));
+                'success' => false,
+                'message' => $sEx->getMessage(),
+                'zcode'   => -4
+            ));
         }
     }
 
@@ -646,17 +645,17 @@ class AsignYellowcubeCore
     protected function getLangBasedSal($sLang, $sSal)
     {
         switch ($sLang) {
-        case 'de': return $this->aSaluationsDE[$sSal];
-            break;
+            case 'de': return $this->aSaluationsDE[$sSal];
+                break;
 
-        case 'en': return $this->aSaluationsEN[$sSal];
-            break;
+            case 'en': return $this->aSaluationsEN[$sSal];
+                break;
 
-        case 'fr': return $this->aSaluationsFR[$sSal];
-            break;
+            case 'fr': return $this->aSaluationsFR[$sSal];
+                break;
 
-        case 'it': return $this->aSaluationsIT[$sSal];
-            break;
+            case 'it': return $this->aSaluationsIT[$sSal];
+                break;
         }
     }
 
@@ -683,10 +682,10 @@ class AsignYellowcubeCore
     public function getYCReferenceNumber($myId, $sType)
     {
         $aTables =  array(
-                        'ART'   => 'asign_yellowcube_product',
-                        'WAB'   => 'asign_yellowcube_orders',
-                        'WAR'   => 'asign_yellowcube_orders'
-                   );
+            'ART'   => 'asign_yellowcube_product',
+            'WAB'   => 'asign_yellowcube_orders',
+            'WAR'   => 'asign_yellowcube_orders'
+        );
 
         // if Type is ART or WAB
         if ($sType === 'ART') {
@@ -739,13 +738,13 @@ class AsignYellowcubeCore
     {
         switch ($sVolumeISO) {
             case 'CMQ': $l = $this->getAdjustedValues($sLength, $dLength);
-                        $w = $this->getAdjustedValues($sWidth, $dWidth);
-                        $h = $this->getAdjustedValues($sHeight, $dHeight);
-            break;
+                $w = $this->getAdjustedValues($sWidth, $dWidth);
+                $h = $this->getAdjustedValues($sHeight, $dHeight);
+                break;
             case 'MTQ': $l = $this->getAdjustedValues($sLength, $dLength, 'm');
-                        $w = $this->getAdjustedValues($sWidth, $dWidth, 'm');
-                        $h = $this->getAdjustedValues($sHeight, $dHeight, 'm');
-            break;
+                $w = $this->getAdjustedValues($sWidth, $dWidth, 'm');
+                $h = $this->getAdjustedValues($sHeight, $dHeight, 'm');
+                break;
         }
 
         return $l * $w * $h;
@@ -769,21 +768,21 @@ class AsignYellowcubeCore
                 }
 
                 return round($dUnit, 3);
-            break;
+                break;
             case 'MMT':
                 if ($sType === 'm') {
                     return round($dUnit / 1000, 3);
                 }
 
                 return round($dUnit / 10, 3);
-            break;
+                break;
             case 'MTR':
                 if ($sType === 'm') {
                     return round($dUnit, 3);
                 }
 
                 return round($dUnit * 100, 3);
-            break;
+                break;
         }
     }
 }

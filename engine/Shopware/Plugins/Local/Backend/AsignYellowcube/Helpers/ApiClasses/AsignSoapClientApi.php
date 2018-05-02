@@ -19,13 +19,13 @@ namespace Shopware\AsignYellowcube\Helpers\ApiClasses;
 use Shopware\AsignYellowcube\Helpers\ApiClasses\Utils\AsignSoapclient;
 
 /**
-* Handles SOAP related functions
-*
-* @category A-Sign
-* @package  AsignYellowcube
-* @author   entwicklung@a-sign.ch
-* @link     http://www.a-sign.ch
-*/
+ * Handles SOAP related functions
+ *
+ * @category A-Sign
+ * @package  AsignYellowcube
+ * @author   entwicklung@a-sign.ch
+ * @link     http://www.a-sign.ch
+ */
 class AsignSoapClientApi
 {
     /**
@@ -35,11 +35,11 @@ class AsignSoapClientApi
      *
      * @return string
      */
-     protected function returnConfigParam($sParam)
-     {
+    protected function returnConfigParam($sParam)
+    {
         $config = Shopware()->Plugins()->Backend()->AsignYellowcube()->Config();
         return $config->$sParam;
-     }
+    }
 
     /**
      * Returns Operation mode for this process
@@ -350,17 +350,16 @@ class AsignSoapClientApi
                 $aParams["local_cert"]    = $certPath;
             }
 
-            $sClient  =  new AsignSoapclient($wsdl, $aParams);
-            return $sClient;
+            return new AsignSoapclient($wsdl, $aParams);
         } catch(Exception $sEx) {
             $oLogs = Shopware()->Models()->getRepository("Shopware\CustomModels\AsignModels\Errorlogs\Errorlogs");
             $oLogs->saveLogsData('SOAP_INIT', $sEx);
 
             throw new Exception($sEx->getMessage());
             return(array(
-                            'success' => false,
-                            'message' => $sEx->getMessage()
-                        ));
+                'success' => false,
+                'message' => $sEx->getMessage()
+            ));
         }
     }
 
@@ -390,15 +389,14 @@ class AsignSoapClientApi
             // END-DEBUG
 
             return $sResponse;
-        } catch(SoapFault $sEx) {
+        } catch(\Exception $sEx) {
             $oLogs = Shopware()->Models()->getRepository("Shopware\CustomModels\AsignModels\Errorlogs\Errorlogs");
             $oLogs->saveLogsData('SOAP_CALL', $sEx);
 
-            throw new Exception($sEx->getMessage());
             return(array(
-                            'success' => false,
-                            'message' => $sEx->getMessage()
-                        ));
+                'success' => false,
+                'message' => $sEx->getMessage()
+            ));
         }
     }
 }

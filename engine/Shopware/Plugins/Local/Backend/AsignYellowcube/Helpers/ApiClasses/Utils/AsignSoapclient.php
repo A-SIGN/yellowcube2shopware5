@@ -4,7 +4,7 @@
  * This file extends SOAP features and functions
  *
  * PHP version 5
- * 
+ *
  * @category  asign
  * @package   AsignYellowcube
  * @author    entwicklung@a-sign.ch
@@ -23,13 +23,13 @@ use Shopware\AsignYellowcube\Components\Api\WSSESoap;
 use Shopware\AsignYellowcube\Components\Api\XMLSecurityKey;
 
 /**
-* Extends SOAP features and functions
-* 
-* @category A-Sign
-* @package  AsignYellowcube
-* @author   entwicklung@a-sign.ch
-* @link     http://www.a-sign.ch
-*/
+ * Extends SOAP features and functions
+ *
+ * @category A-Sign
+ * @package  AsignYellowcube
+ * @author   entwicklung@a-sign.ch
+ * @link     http://www.a-sign.ch
+ */
 class AsignSoapclient extends \SoapClient
 {
     /**
@@ -46,7 +46,7 @@ class AsignSoapclient extends \SoapClient
      * @var bool Use certifiate or not
      */
     protected $useCertificate;
-    
+
     /**
      * @param mixed $wsdl
      * @param array $options
@@ -65,7 +65,7 @@ class AsignSoapclient extends \SoapClient
      */
     public function __doRequest($request, $location, $action, $version, $oneWay = NULL)
     {
-        if ($this->useCertificate) {            
+        if ($this->useCertificate) {
             return $this->signRequest($request, $location, $action, $version, $oneWay);
         }
 
@@ -88,7 +88,7 @@ class AsignSoapclient extends \SoapClient
     {
         $doc = new \DOMDocument();
         $doc->loadXML($request);
-        
+
         $wsse = new WSSESoap($doc);
         $wsse->addTimestamp();
 
@@ -100,30 +100,9 @@ class AsignSoapclient extends \SoapClient
         $wsse->attachTokentoSig($token);
 
         $signedRequest = $wsse->saveXML();
-        
+
         return parent::__doRequest($signedRequest, $location, $action, $version, $oneWay);
 
-    }
-
-    /**
-     * Calls the specified method on the SOAP server.
-     *
-     * @param string $method
-     * @param string $args
-     * @return mixed|void
-     *
-     * @throws YellowCubeException if a SOAP error occurs.
-     * @throws \Exception
-     */
-    public function __call($method, $args)
-    {
-        try {
-            return parent::__call($method, $args);
-        } catch (Exception $e) {
-            $message = $e->getMessage();
-            $message .= PHP_EOL . PHP_EOL . 'Request XML: ' . PHP_EOL . $this->__getLastRequest();
-            throw new \Exception($message, $e->getCode(), $e);
-        }
     }
 
     /**
@@ -142,7 +121,7 @@ class AsignSoapclient extends \SoapClient
      * @return string Content of the certificate passed  in 'local_cert'.
      */
     protected function getCertificateContent()
-    {        
+    {
         return file_get_contents($this->options['local_cert']);
     }
 }
