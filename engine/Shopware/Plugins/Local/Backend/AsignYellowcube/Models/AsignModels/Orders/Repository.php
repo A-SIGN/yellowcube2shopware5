@@ -69,7 +69,7 @@ class Repository extends ModelRepository
         //If a filter is set
         if ($filters) {
             foreach ($filters as $filter) {
-                $select->andWhere('s_order.ordernumber LIKE ?', '%' . $filter["value"] . '%');
+                $select->where('s_order.ordernumber LIKE ?', '%' . $filter["value"] . '%');
                 $select->orWhere('s_premium_dispatch.name LIKE ?', '%' . $filter["value"] . '%');
                 $select->orWhere('s_core_paymentmeans.description LIKE ?', '%' . $filter["value"] . '%');
             }
