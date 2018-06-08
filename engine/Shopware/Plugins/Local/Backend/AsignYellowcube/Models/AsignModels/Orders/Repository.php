@@ -15,16 +15,20 @@
  */
 
 namespace Shopware\CustomModels\AsignModels\Orders;
+
 use Shopware\Components\Model\ModelRepository;
 
+use Shopware\Models\Order\Order;
+use Shopware\Models\Order\Status;
+
 /**
-* Defines repository for Orders
-*
-* @category A-Sign
-* @package  AsignYellowcube
-* @author   entwicklung@a-sign.ch
-* @link     http://www.a-sign.ch
-*/
+ * Defines repository for Orders
+ *
+ * @category A-Sign
+ * @package  AsignYellowcube
+ * @author   entwicklung@a-sign.ch
+ * @link     http://www.a-sign.ch
+ */
 class Repository extends ModelRepository
 {
     /**
@@ -47,17 +51,17 @@ class Repository extends ModelRepository
     /**
      * Returns all the orders based on filter or sort.
      *
-     * @param array   $filters Filters
-     * @param integer $sort    Sort value
-     * @param integer $offset  Offset value
-     * @param integer $limit   Limit value
+     * @param array $filters Filters
+     * @param integer $sort Sort value
+     * @param integer $offset Offset value
+     * @param integer $limit Limit value
      *
      * @return array
      */
     public function getOrdersListQuery($filters, $sort, $offset = 0, $limit = 100)
     {
-        $sOrdersColumns = array('ordid' => 'id', 'orderNumber'=>'ordernumber','amount'=>'invoice_amount', 'amountNet'=>'invoice_amount_net','timestamp'=>'ordertime', 'userID');
-        $sYcubeOrderCols = array('id','lastSent','ycReference','ycResponse','ycWabResponse','ycWarResponse');
+        $sOrdersColumns = array('ordid' => 'id', 'orderNumber' => 'ordernumber', 'amount' => 'invoice_amount', 'amountNet' => 'invoice_amount_net', 'timestamp' => 'ordertime', 'userID');
+        $sYcubeOrderCols = array('id', 'lastSent', 'ycReference', 'ycResponse', 'ycWabResponse', 'ycWarResponse');
         $select = Shopware()->Db()->select()
             ->from('s_order', $sOrdersColumns)
             ->joinLeft('s_core_paymentmeans', 's_order.paymentID = s_core_paymentmeans.id', array('payment' => 'description'))
@@ -156,7 +160,7 @@ class Repository extends ModelRepository
         if ($articleID > 0) {
             /// sinc it has to be displayed on invoice change to countryname..
             $localeRepo = Shopware()->Models()->getRepository('Shopware\Models\Shop\Shop')->getDefault();
-            $localeId= $localeRepo->getLocale()->getId();
+            $localeId = $localeRepo->getLocale()->getId();
 
             // update query executed.
             $sCountry = Shopware()->Db()->fetchOne("select `countryiso` from `s_core_countries` where `id` = '" . $aIntHandling['origin'] . "'");
@@ -169,9 +173,9 @@ class Repository extends ModelRepository
     /**
      * Returns order data based on ordid
      *
-     * @param integer $ordid    order item id
+     * @param integer $ordid order item id
      * @param boolean $isDirect if direct from CO
-     * @param bool    $artid    if its a CRON
+     * @param bool $artid if its a CRON
      *
      * @return array
      */
@@ -218,15 +222,23 @@ class Repository extends ModelRepository
      * WAB, WAR, DC = Direct Call
      *
      * @param array $aResponseData Array of response
-     * @param string $ordid        Order id
-     * @param string $mode         Mode of transfer
+     * @param string $ordid Order id
+     * @param string $mode Mode of transfer
      *
      * @return null
      */
     public function saveOrderResponseData($aResponseData, $ordid, $mode = null)
     {
         // based on mode switch the response
-        try{
+        try {
+            if (isset($aResponseData['success']) && !$aResponseData['success']) {
+                $orderResource = \Shopware\Components\Api\Manager::getResource('Order');
+                $orderResource->update($ordid, array(
+                    'orderStatusId' => Status::ORDER_STATE_CLARIFICATION_REQUIRED,
+                ));
+                return;
+            }
+
             if ($mode !== null) {
                 // if direct then?
                 if ($mode === 'DC') {
@@ -249,8 +261,13 @@ class Repository extends ModelRepository
             $clrResponse = (array)$clrResponse;
             if (count($clrResponse) > 0) {
                 // if response is not "E" then?
-                if ($clrResponse['StatusType'] !== 'E') {
+                if ($clrResponse['StatusType'] !== 'E' && isset($clrResponse['Reference'])) {
                     $sReference = ", `ycReference` = '" . $clrResponse['Reference'] . "'";
+
+                    $orderResource = \Shopware\Components\Api\Manager::getResource('Order');
+                    $orderResource->update($ordid, array(
+                        'orderStatusId' => Status::ORDER_STATE_IN_PROCESS,
+                    ));
                 }
 
                 // push in db..
@@ -261,21 +278,27 @@ class Repository extends ModelRepository
                 $iCount = Shopware()->Db()->fetchOne("select count(*) from `asign_yellowcube_orders` where `ordid` = '" . $ordid . "'");
                 // if present then?
                 if ($iCount) {
-                    $sQuery = "update `asign_yellowcube_orders` set `" . $sColumn . "` = '" . $sData . "'" . $sReference . $sWhere;
+                    $sQuery = "update `asign_yellowcube_orders` set `" . $sColumn . "` = '" . addslashes($sData) . "'" . $sReference . $sWhere;
                 } else {
-                    $sQuery = "insert into `asign_yellowcube_orders` set `ordid` = '" . $ordid . "', `lastSent` = 1, `" . $sColumn . "` = '" . $sData ."'" . $sReference;
+                    $sQuery = "insert into `asign_yellowcube_orders` set `ordid` = '" . $ordid . "', `lastSent` = 1, `" . $sColumn . "` = '" . addslashes($sData) . "'" . $sReference;
                 }
                 Shopware()->Db()->query($sQuery);
 
+
                 // update tracking code in s_order table
                 if ($mode === 'WAR') {
-                    $sTrackingCode = $aResponseData[WAR]->GoodsIssue->CustomerOrderHeader->PostalShipmentNo;
-                    Shopware()->Db()->query("update `s_order` set `trackingcode` = '" . $sTrackingCode . "' where `id` = '" . $ordid . "'");
+                    $sTrackingCode = $aResponseData[WAR][0]->GoodsIssue->CustomerOrderHeader->PostalShipmentNo;
+
+                    $orderResource = \Shopware\Components\Api\Manager::getResource('Order');
+                    $orderResource->update($ordid, array(
+                        'orderStatusId' => Status::ORDER_STATE_READY_FOR_DELIVERY,
+                        'trackingCode'  => $sTrackingCode,
+                    ));
 
                     $this->_bIsTrackingResponse = true;
                 }
             }
-        } catch(Exception $e) {
+        } catch (Exception $e) {
             $oLogs = Shopware()->Models()->getRepository("Shopware\CustomModels\AsignModels\Errorlogs\Errorlogs");
             $oLogs->saveLogsData('saveOrderResponseData', $e);
         }
@@ -302,7 +325,7 @@ class Repository extends ModelRepository
      */
     public function getYellowcubeReport($itemId, $sTable, $sColumn = 'ycResponse')
     {
-        $sQuery = "select `" . $sColumn . "` from `" . $sTable . "` where `ordid` = '" . $itemId ."'";
+        $sQuery = "select `" . $sColumn . "` from `" . $sTable . "` where `ordid` = '" . $itemId . "'";
         $aComplete = Shopware()->Db()->fetchOne($sQuery);
         $aResponse = unserialize($aComplete);
 

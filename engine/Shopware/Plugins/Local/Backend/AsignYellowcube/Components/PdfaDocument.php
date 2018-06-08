@@ -63,21 +63,21 @@ class PdfaDocument extends Shopware_Components_Document
      * @var bool
      * @deprecated
      */
-    protected $_compatibilityMode = false;
+    public $_compatibilityMode = false;
 
     /**
      * Define output
      *
      * @var string html,pdf,return
      */
-    protected $_renderer = "html";
+    public $_renderer = "html";
 
     /**
      * Are properties already assigned to smarty?
      *
      * @var bool
      */
-    protected $_valuesAssigend = false;
+    public $_valuesAssigend = false;
 
     /**
      * Subshop-Configuration
@@ -98,14 +98,14 @@ class PdfaDocument extends Shopware_Components_Document
      *
      * @var bool
      */
-    protected $_preview = false;
+    public $_preview = false;
 
     /**
      * Typ/ID of document [0,1,2,3] - s_core_documents
      *
      * @var int
      */
-    protected $_typID = 5;
+    public $_typID = 5;
 
     /**
      * Document-Metadata / Properties
@@ -119,35 +119,35 @@ class PdfaDocument extends Shopware_Components_Document
      *
      * @var int
      */
-    protected $_documentID;
+    public $_documentID;
 
     /**
      * Primary key of the created document row (s_order_documents)
      *
      * @var int
      */
-    protected $_documentRowID;
+    public $_documentRowID;
 
     /**
      * Hash of the created document row (s_order_documents.hash), will be used as filename when preview is false
      *
      * @var string
      */
-    protected $_documentHash;
+    public $_documentHash;
 
     /**
      * Invoice ID for reference in shipping documents etc.
      *
      * @var string
      */
-    protected $_documentBid;
+    public $_documentBid;
 
     /**
      * Ref to the translation component
      *
      * @var \Shopware_Components_Translation
      */
-    protected $translationComponent;
+    public $translationComponent;
 
     /**
      * Start renderer / pdf-generation especially for PDFA

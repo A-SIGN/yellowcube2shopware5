@@ -506,8 +506,7 @@ class Shopware_Controllers_Backend_AsignYellowcube extends Shopware_Controllers_
     {
         try{
             $oYCron = new AsignYellowcubeCron();
-            $sMode = "pp"; // only prepayment
-            $iCount = $oYCron->autoSendYCOrders($sMode);
+            $iCount = $oYCron->autoSendYCOrders();
 
             // save in database
             if ($iCount > 0) {
@@ -649,9 +648,7 @@ class Shopware_Controllers_Backend_AsignYellowcube extends Shopware_Controllers_
         $oYCron = new AsignYellowcubeCron();
         switch ($command) {
         case 'co':
-            // only for prepayment: CashInAdvance/Vorouskasse is present
-            $sMode = $aParams[1]; // payment - prepad (pp) only
-            $oYCron->autoSendYCOrders($sMode);
+            $oYCron->autoSendYCOrders();
             break;
 
         case 'ia':

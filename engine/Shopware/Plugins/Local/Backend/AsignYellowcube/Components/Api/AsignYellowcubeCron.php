@@ -68,23 +68,24 @@ class AsignYellowcubeCron
     /**
      * Creates New customer Order in Yellowcube     
      *
-     * @param string $sMode Payment Parameter
+     * @param bool $isCron Called via cron
      *
      * @return array
      */
-    public function autoSendYCOrders($sMode = null, $isCron = false)
+    public function autoSendYCOrders($isCron = false)
     {
         $iCount   = 0;
         
         try {
-            // if pp = prepayment then?
-            $sWhere = " and `paymentID` <> 5";
-            if ($sMode === 'pp') {
-                // 12 - completely_paid
-                // 2 - completed 
-                // as per s_core_status
-                $sWhere = " and `paymentID` = 5 and `cleareddate` IS NOT NULL and `status` = 2 and `cleared` = 12";
-            }
+            // 12 - completely_paid
+            // 2 - completed
+            // as per s_core_status
+            $sWhere = " and `cleareddate` IS NOT NULL and `cleared` = 12" .
+                        " and `status` != " . \Shopware\Models\Order\Status::ORDER_STATE_READY_FOR_DELIVERY .
+                        " and `status` != " . \Shopware\Models\Order\Status::ORDER_STATE_CANCELLED .
+                        " and `status` != " . \Shopware\Models\Order\Status::ORDER_STATE_CLARIFICATION_REQUIRED .
+                        " and `status` != " . \Shopware\Models\Order\Status::ORDER_STATE_COMPLETELY_DELIVERED;
+
             $aOrders  = Shopware()->Db()->fetchAll("select `id` from `s_order` where `ordernumber` > 0" . $sWhere);
            
             if (count($aOrders) > 0) {

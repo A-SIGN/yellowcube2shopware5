@@ -126,7 +126,7 @@ class Shopware_Controllers_Widgets_AsignWidgetCube extends Enlight_Controller_Ac
                     'delivery_date'           => $deliveryDate,
                     // Don't show shipping costs on delivery note #SW-4303
                     'shippingCostsAsPosition' => (int) $documentType !== 2,
-                    '_renderer'               => $renderer,
+                    '_renderer'               => $aRenderer['render'],
                     '_preview'                => $this->Request()->getParam('preview', false),
                     '_previewForcePagebreak'  => $this->Request()->getParam('pageBreak', null),
                     '_previewSample'          => $this->Request()->getParam('sampleData', null),
@@ -137,8 +137,6 @@ class Shopware_Controllers_Widgets_AsignWidgetCube extends Enlight_Controller_Ac
             );
 
             $document->render($aRenderer);
-
-            if ($renderer == "html") exit; // Debu//g-Mode
 
             return true;
         } catch(Exception $e) {

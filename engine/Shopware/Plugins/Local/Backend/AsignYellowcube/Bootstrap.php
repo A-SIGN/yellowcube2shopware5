@@ -16,51 +16,51 @@
  */
 
 /**
-* Defines plugin information
-*
-* @category A-Sign
-* @package  AsignYellowcube
-* @author   entwicklung@a-sign.ch
-* @link     http://www.a-sign.ch
-*/
+ * Defines plugin information
+ *
+ * @category A-Sign
+ * @package  AsignYellowcube
+ * @author   entwicklung@a-sign.ch
+ * @link     http://www.a-sign.ch
+ */
 class Shopware_Plugins_Backend_AsignYellowcube_Bootstrap extends Shopware_Components_Plugin_Bootstrap
 {
     /**
-    * CRON default time interveal. Default = 5
-    * @var integer
-    */
+     * CRON default time interveal. Default = 5
+     * @var integer
+     */
     protected $iDefaultCronInterval = 5;
 
     /**
-    * Array of CRONs created for the execution
-    * @var array
-    */
+     * Array of CRONs created for the execution
+     * @var array
+     */
     protected $aCronEntries = array(
-            'ActArtCron'    => 'Asign-YC Active articles',
-            'InactArtCron'  => 'Asign-YC Inactive articles", "InactArtCron',
-            'OrdCron'       => 'Asign-YC Prepayment Orders',
-            'InventCron'    => 'Asign-YC Inventory", "InventCron',
-        );
+        'ActArtCron'   => 'Asign-YC Active articles',
+        'InactArtCron' => 'Asign-YC Inactive articles", "InactArtCron',
+        'OrdCron'      => 'Asign-YC Prepayment Orders',
+        'InventCron'   => 'Asign-YC Inventory", "InventCron',
+    );
 
     /**
      * Array of shipping methods to be installed
      * @var array
      */
     protected $_aShippingCosts = array(
-        'SPS_ECO'               => 'PostPac Economy',
-        'SPS_ECO_SI'            => 'PostPac Economy mit Unterschrift (SI)',
-        'SPS_PRI'               => 'PostPac Priority',
-        'SPS_PRI_SI'            => 'PostPac Priority mit Unterschrift (SI)',
-        'SPS_PRI_SI;AZ'         => 'PostPac Priority SI Abendzustellung',
-        'SPS_PRI_SI;SA'         => 'PostPac Priority SI Samstagszustellung',
-        'SPS_PICKUP_APOST'      => 'Abholung A-Post',
-        'SPS_PICKUP_URGENT'     => 'International TNT',
-        'SPS_PICKUP_INTPRI;GR'  => 'Abholung International Priority Gross',
-        'SPS_PICKUP_INTPRI;MX'  => 'Abholung International Priority Maxi',
-        'SPS_PICKUP_INTECO;GR'  => 'Abholung International Economy Gross',
-        'SPS_PICKUP_INTECO;MX'  => 'Abholung International Economy Maxi',
-        'SPS_INTPRI'            => 'Internationaler Kleinpaket-Brief Priority',
-        'SPS_INTECO'            => 'Internationaler Kleinpaket-Brief Economy'
+        'SPS_ECO'              => 'PostPac Economy',
+        'SPS_ECO_SI'           => 'PostPac Economy mit Unterschrift (SI)',
+        'SPS_PRI'              => 'PostPac Priority',
+        'SPS_PRI_SI'           => 'PostPac Priority mit Unterschrift (SI)',
+        'SPS_PRI_SI;AZ'        => 'PostPac Priority SI Abendzustellung',
+        'SPS_PRI_SI;SA'        => 'PostPac Priority SI Samstagszustellung',
+        'SPS_PICKUP_APOST'     => 'Abholung A-Post',
+        'SPS_PICKUP_URGENT'    => 'International TNT',
+        'SPS_PICKUP_INTPRI;GR' => 'Abholung International Priority Gross',
+        'SPS_PICKUP_INTPRI;MX' => 'Abholung International Priority Maxi',
+        'SPS_PICKUP_INTECO;GR' => 'Abholung International Economy Gross',
+        'SPS_PICKUP_INTECO;MX' => 'Abholung International Economy Maxi',
+        'SPS_INTPRI'           => 'Internationaler Kleinpaket-Brief Priority',
+        'SPS_INTECO'           => 'Internationaler Kleinpaket-Brief Economy',
     );
 
     /**
@@ -73,14 +73,14 @@ class Shopware_Plugins_Backend_AsignYellowcube_Bootstrap extends Shopware_Compon
     public function getInfo()
     {
         return array(
-            'label'         => $this->getPluginInfo('label'),
-            'class'         => $this->getPluginInfo('class'),
-            'author'        => $this->getPluginInfo('author'),
-            'copyright'     => $this->getPluginInfo('copyright'),
-            'support'       => $this->getPluginInfo('support'),
-            'version'       => $this->getPluginInfo('version'),
-            'link'          => $this->getPluginInfo('link'),
-       );
+            'label'     => $this->getPluginInfo('label'),
+            'class'     => $this->getPluginInfo('class'),
+            'author'    => $this->getPluginInfo('author'),
+            'copyright' => $this->getPluginInfo('copyright'),
+            'support'   => $this->getPluginInfo('support'),
+            'version'   => $this->getPluginInfo('version'),
+            'link'      => $this->getPluginInfo('link'),
+        );
     }
 
     /**
@@ -157,12 +157,12 @@ class Shopware_Plugins_Backend_AsignYellowcube_Bootstrap extends Shopware_Compon
         );
 
         $this->createMenuItem(array(
-            'label'         => $this->getPluginInfo('label'),
-            'controller'    => $this->getPluginInfo('controller'),
-            'class'         => $this->getPluginInfo('class'),
-            'action'        => $this->getPluginInfo('action'),
-            'active'        => 1,
-            'parent'        => $this->Menu()->findOneBy(['label' => $this->getPluginInfo('parent')])
+            'label'      => $this->getPluginInfo('label'),
+            'controller' => $this->getPluginInfo('controller'),
+            'class'      => $this->getPluginInfo('class'),
+            'action'     => $this->getPluginInfo('action'),
+            'active'     => 1,
+            'parent'     => $this->Menu()->findOneBy(['label' => $this->getPluginInfo('parent')]),
         ));
 
         $this->ycubeCreateDispatch();
@@ -183,9 +183,9 @@ class Shopware_Plugins_Backend_AsignYellowcube_Bootstrap extends Shopware_Compon
         }
 
         return array(
-                'success' => true,
-                'invalidateCache' => array('backend')
-           );
+            'success'         => true,
+            'invalidateCache' => array('backend'),
+        );
     }
 
     /**
@@ -223,7 +223,7 @@ class Shopware_Plugins_Backend_AsignYellowcube_Bootstrap extends Shopware_Compon
             $this->Path() . 'Views/'
         );
 
-        return $this->Path(). 'Controllers/Widgets/AsignWidgetCube.php';
+        return $this->Path() . 'Controllers/Widgets/AsignWidgetCube.php';
     }
 
     /**
@@ -234,7 +234,7 @@ class Shopware_Plugins_Backend_AsignYellowcube_Bootstrap extends Shopware_Compon
      */
     public function onPostDispatchCheckout(Enlight_Event_EventArgs $arguments)
     {
-        /**@var $controller Shopware_Controllers_Frontend_Checkout*/
+        /**@var $controller Shopware_Controllers_Frontend_Checkout */
         $controller = $arguments->getSubject();
 
         // defines the default shopware VIEWS directory.
@@ -253,7 +253,7 @@ class Shopware_Plugins_Backend_AsignYellowcube_Bootstrap extends Shopware_Compon
      */
     public function onPostDispatchRegister(Enlight_Event_EventArgs $arguments)
     {
-        /**@var $controller Shopware_Controllers_Frontend_Register*/
+        /**@var $controller Shopware_Controllers_Frontend_Register */
         $controller = $arguments->getSubject();
 
         // defines the default shopware VIEWS directory.
@@ -272,7 +272,7 @@ class Shopware_Plugins_Backend_AsignYellowcube_Bootstrap extends Shopware_Compon
      */
     public function onPostDispatchAccount(Enlight_Event_EventArgs $arguments)
     {
-        /**@var $controller Shopware_Controllers_Frontend_Account*/
+        /**@var $controller Shopware_Controllers_Frontend_Account */
         $controller = $arguments->getSubject();
 
         // defines the default shopware VIEWS directory.
@@ -302,19 +302,19 @@ class Shopware_Plugins_Backend_AsignYellowcube_Bootstrap extends Shopware_Compon
         // call is made from BE
         if (empty($aRenderer) && $_REQUEST['temp']) {
             $aRenderer = array(
-                'render'    => 'pdf',
-                'preview'   => $_REQUEST['preview'],
-                'orderid'   => $_REQUEST['orderId'],
+                'render'  => 'pdf',
+                'preview' => $_REQUEST['preview'],
+                'orderid' => $_REQUEST['orderId'],
             );
         }
 
         try {
-            /** @extends Shopware_Components_Document **/
+            /** @extends Shopware_Components_Document * */
             require_once(Shopware()->AppPath("Plugins/Local/Backend/AsignYellowcube/Components/") . "PdfaDocument.php");
 
             $pdfaDoc = Enlight_Class::Instance('PdfaDocument');
             $pdfaDoc->pdfaRender($aRenderer);
-        } catch(Exception $e) {
+        } catch (Exception $e) {
             $oLogs = Shopware()->Models()->getRepository("Shopware\CustomModels\AsignModels\Errorlogs\Errorlogs");
             $oLogs->saveLogsData('beforeDocumentRender', $e);
         }
@@ -348,7 +348,7 @@ class Shopware_Plugins_Backend_AsignYellowcube_Bootstrap extends Shopware_Compon
         $tool = new \Doctrine\ORM\Tools\SchemaTool($em);
 
         $classes = array(
-            $em->getClassMetadata("Shopware\CustomModels\AsignModels" . $sFinalSchema)
+            $em->getClassMetadata("Shopware\CustomModels\AsignModels" . $sFinalSchema),
         );
 
         try {
@@ -390,58 +390,58 @@ class Shopware_Plugins_Backend_AsignYellowcube_Bootstrap extends Shopware_Compon
             $ycForm->setElement('button', 'main', array('label' => 'Main Configuration'));
             $ycForm->setElement('select', 'sYellowCubeMode',
                 array(
-                    'label' => 'Yellowcube Operating Mode',
+                    'label'       => 'Yellowcube Operating Mode',
                     'description' => 'Yellowcube Operating Modes: Test or Production. Before going Live set Mode to Production mode. Default value Test mode.',
-                    'store' => array(
+                    'store'       => array(
                         array('D', 'Development'),
                         array('T', 'Test'),
-                        array('P', 'Production')
-                   )
-               )
-           );
+                        array('P', 'Production'),
+                    ),
+                )
+            );
             $ycForm->setElement('text', 'sYellowCubeWsdlUrl',
                 array(
-                    'required'      => 1,
-                    'label'         => 'WSDL Connection URL',
-                    'description'   => 'Specify the WSDL Connection URL which is responsible for Yellowcube operations.',
-                    'value'         => 'https://service-test.swisspost.ch/apache/yellowcube-int/?wsdl'
-               )
-           );
+                    'required'    => 1,
+                    'label'       => 'WSDL Connection URL',
+                    'description' => 'Specify the WSDL Connection URL which is responsible for Yellowcube operations.',
+                    'value'       => 'https://service-test.swisspost.ch/apache/yellowcube-int/?wsdl',
+                )
+            );
             $ycForm->setElement('text', 'sYellowCubeTransMaxTime',
                 array(
                     'label' => 'Maximum waiting Time (in seconds)',
-                    'value' => '120'
-               )
-           );
+                    'value' => '120',
+                )
+            );
 
             // authentication information only
             $ycForm->setElement('button', 'authentication', array('label' => 'Authentication'));
             $ycForm->setElement('text', 'sYellowCubeDepositorNo',
                 array(
-                    'required'      => 1,
-                    'label'         => 'Yellowcube Depositor No.',
-                    'description'   => 'Specify Yellowcube Depositor Number or Customer Number. e.g. 0000054321, 0000010154.',
-                    'value'         => '0000040309'
-               )
-           );
+                    'required'    => 1,
+                    'label'       => 'Yellowcube Depositor No.',
+                    'description' => 'Specify Yellowcube Depositor Number or Customer Number. e.g. 0000054321, 0000010154.',
+                    'value'       => '0000040309',
+                )
+            );
 
             $ycForm->setElement('text', 'sYellowCubeSender',
                 array(
-                    'required'      => 1,
-                    'label'         => 'Sender identity',
-                    'description'   => 'Set the sender identity for connection/Authentication. For Testing purpose YCTest has been used. Later Live sender details can be used.',
-                    'value'         => 'Testshop07'
-               )
-           );
+                    'required'    => 1,
+                    'label'       => 'Sender identity',
+                    'description' => 'Set the sender identity for connection/Authentication. For Testing purpose YCTest has been used. Later Live sender details can be used.',
+                    'value'       => 'Testshop07',
+                )
+            );
 
             $ycForm->setElement('text', 'sYellowCubeReceiver',
                 array(
-                    'required'      => 1,
-                    'label'         => 'Receiver Identity',
-                    'description'   => 'Currently default value YELLOWCUBE has been set. Can be modified during LIVE integration.',
-                    'value'         => 'YELLOWCUBE'
-               )
-           );
+                    'required'    => 1,
+                    'label'       => 'Receiver Identity',
+                    'description' => 'Currently default value YELLOWCUBE has been set. Can be modified during LIVE integration.',
+                    'value'       => 'YELLOWCUBE',
+                )
+            );
 
             // Certificate informationb only
             $ycForm->setElement('button', 'Certificate', array('label' => 'Certificate Configuration'));
@@ -450,180 +450,180 @@ class Shopware_Plugins_Backend_AsignYellowcube_Bootstrap extends Shopware_Compon
                     'label' => 'Use Certificate for all modes',
                     'store' => array(
                         array('1', 'Yes'),
-                        array('0', 'No')
-                   )
-               )
-           );
+                        array('0', 'No'),
+                    ),
+                )
+            );
 
             $ycForm->setElement('text', 'sYellowCubeCertFile',
                 array(
-                    'required'      => 1,
-                    'label'         => 'Certificate Filename',
-                    'description'   => 'Specify the YC Certificate filename placed under your Shop-root /cert folder.',
-                    'value'         => '01-CLIENT-ASign.pem'
-               )
-           );
+                    'required'    => 1,
+                    'label'       => 'Certificate Filename',
+                    'description' => 'Specify the YC Certificate filename placed under your Shop-root /cert folder.',
+                    'value'       => '01-CLIENT-ASign.pem',
+                )
+            );
 
             // partner information
             $ycForm->setElement('button', 'partner', array('label' => 'Partner Information'));
             $ycForm->setElement('text', 'sYellowCubePartnerNo',
                 array(
-                    'required'      => 1,
-                    'label'         => 'Partner Nummer',
-                    'description'   => 'Set Partner Number. Used for sending Order to YC.',
-                    'value'         => '0000300006'
-               )
-           );
+                    'required'    => 1,
+                    'label'       => 'Partner Nummer',
+                    'description' => 'Set Partner Number. Used for sending Order to YC.',
+                    'value'       => '0000300006',
+                )
+            );
 
             $ycForm->setElement('text', 'sYellowCubePType',
                 array(
-                    'required'      => 1,
-                    'label'         => 'Partner Type',
-                    'description'   => 'WE = Warenempfänger (Im Standard YellowCube wird nur eine Partnerrolle neben dem Aufgeber unterstützt.)',
-                    'value'         => 'WE'
-               )
-           );
+                    'required'    => 1,
+                    'label'       => 'Partner Type',
+                    'description' => 'WE = Warenempfänger (Im Standard YellowCube wird nur eine Partnerrolle neben dem Aufgeber unterstützt.)',
+                    'value'       => 'WE',
+                )
+            );
 
             $ycForm->setElement('text', 'sYellowCubePlant',
                 array(
-                    'required'      => 1,
-                    'label'         => 'Plant ID',
-                    'description'   => 'Plant is the place where the product is stored in the auto-store. Bearing ID as a work ID according to the profile distance dealer. e.g. Y001, Y004, Y010, etc.',
-                    'value'         => 'Y007'
-               )
+                    'required'    => 1,
+                    'label'       => 'Plant ID',
+                    'description' => 'Plant is the place where the product is stored in the auto-store. Bearing ID as a work ID according to the profile distance dealer. e.g. Y001, Y004, Y010, etc.',
+                    'value'       => 'Y007',
+                )
             );
 
             // Article informations only...
             $ycForm->setElement('button', 'Article', array('label' => 'Article Configuration'));
             $ycForm->setElement('text', 'sYellowCubeQuantityISO',
                 array(
-                    'required'      => 1,
-                    'label'         => 'Default Quantity (ISO)',
-                    'description'   => 'Verkaufs-Mengeneinheit in ISO-Code. Werte gemäss gültiger, mit Kunde vereinbarter Verkaufsmengenheinheiten.',
-                    'value'         => 'PCE'
-               )
-           );
+                    'required'    => 1,
+                    'label'       => 'Default Quantity (ISO)',
+                    'description' => 'Verkaufs-Mengeneinheit in ISO-Code. Werte gemäss gültiger, mit Kunde vereinbarter Verkaufsmengenheinheiten.',
+                    'value'       => 'PCE',
+                )
+            );
 
             $ycForm->setElement('text', 'sYellowCubeAlternateUnitISO',
                 array(
-                    'required'      => 1,
-                    'label'         => 'Alterantive Basismengen-Einheit',
-                    'value'         => 'PCE'
-               )
-           );
+                    'required' => 1,
+                    'label'    => 'Alterantive Basismengen-Einheit',
+                    'value'    => 'PCE',
+                )
+            );
 
             $ycForm->setElement('select', 'sYellowCubeEANType',
                 array(
                     'label' => 'EANType',
                     'store' => array(
-                        array('HE','Hersteller-EAN'),
-                        array('HK','Hersteller-Kurz-EAN'),
-                        array('I6','ITF-Code - 16stellig'),
-                        array('IC','ITF-Code'),
-                        array('IE','Instore-EAN (int. Vergabe mögl.)'),
-                        array('IK','Instore-Kurz-EAN (int. Vergabe mögl.)'),
-                        array('UC','UPC-Code'),
-                        array('VC','Velocity-Code (int. Vergabe mögl.)')
-                   )
-               )
-           );
+                        array('HE', 'Hersteller-EAN'),
+                        array('HK', 'Hersteller-Kurz-EAN'),
+                        array('I6', 'ITF-Code - 16stellig'),
+                        array('IC', 'ITF-Code'),
+                        array('IE', 'Instore-EAN (int. Vergabe mögl.)'),
+                        array('IK', 'Instore-Kurz-EAN (int. Vergabe mögl.)'),
+                        array('UC', 'UPC-Code'),
+                        array('VC', 'Velocity-Code (int. Vergabe mögl.)'),
+                    ),
+                )
+            );
 
             $ycForm->setElement('select', 'sYellowCubeNetWeightISO',
                 array(
                     'label' => 'Default Nettogewicht (ISO)',
                     'store' => array(
-                        array('GRM','Gramm [gr]'),
-                        array('KGM','Kilogramm [kg]')
-                   )
-               )
-           );
+                        array('GRM', 'Gramm [gr]'),
+                        array('KGM', 'Kilogramm [kg]'),
+                    ),
+                )
+            );
 
             $ycForm->setElement('select', 'sYellowCubeGrossWeightISO',
                 array(
                     'label' => 'Default Bruttogewicht (ISO)',
                     'store' => array(
-                        array('GRM','Gramm [gr]'),
-                        array('KGM','Kilogramm [kg]')
-                   )
-               )
-           );
+                        array('GRM', 'Gramm [gr]'),
+                        array('KGM', 'Kilogramm [kg]'),
+                    ),
+                )
+            );
 
             $ycForm->setElement('select', 'sYellowCubeLengthISO',
                 array(
                     'label' => 'Länge (ISO)',
                     'store' => array(
-                        array('CMT','Centimeter'),
-                        array('MTR','Meter'),
-                        array('MMT','Millimeter')
-                   )
-               )
-           );
+                        array('CMT', 'Centimeter'),
+                        array('MTR', 'Meter'),
+                        array('MMT', 'Millimeter'),
+                    ),
+                )
+            );
 
             $ycForm->setElement('select', 'sYellowCubeWidthISO',
                 array(
                     'label' => 'Breite (ISO)',
                     'store' => array(
-                        array('CMT','Centimeter'),
-                        array('MTR','Meter'),
-                        array('MMT','Millimeter')
-                   )
-               )
-           );
+                        array('CMT', 'Centimeter'),
+                        array('MTR', 'Meter'),
+                        array('MMT', 'Millimeter'),
+                    ),
+                )
+            );
 
             $ycForm->setElement('select', 'sYellowCubeHeightISO',
                 array(
                     'label' => 'Höhe (ISO)',
                     'store' => array(
-                        array('CMT','Centimeter'),
-                        array('MTR','Meter'),
-                        array('MMT','Millimeter')
-                   )
-               )
-           );
+                        array('CMT', 'Centimeter'),
+                        array('MTR', 'Meter'),
+                        array('MMT', 'Millimeter'),
+                    ),
+                )
+            );
 
             $ycForm->setElement('select', 'sYellowCubeVolumeISO',
                 array(
                     'label' => 'Volumen (ISO)',
                     'store' => array(
-                        array('CMQ','Kubik-Centimeter [cm3]'),
-                        array('MTQ','Kubik-Meter [m3]')
-                   )
-               )
-           );
+                        array('CMQ', 'Kubik-Centimeter [cm3]'),
+                        array('MTQ', 'Kubik-Meter [m3]'),
+                    ),
+                )
+            );
 
             // Order informationb only...
             $ycForm->setElement('button', 'Order', array('label' => 'Order Configuration'));
             $ycForm->setElement('select', 'blYellowCubeOrderManualSend',
                 array(
-                    'label' => 'Manually send Order to Yellowcube?',
-                    'description'   => 'Ja = Send order manually.<br />Nein = Send order immediately after completion.',
-                    'store' => array(
+                    'label'       => 'Manually send Order to Yellowcube?',
+                    'description' => 'Ja = Send order manually.<br />Nein = Send order immediately after completion.',
+                    'store'       => array(
                         array('1', 'Yes'),
-                        array('0', 'No')
-                   )
-               )
-           );
+                        array('0', 'No'),
+                    ),
+                )
+            );
             $ycForm->setElement('select', 'sYellowCubeOrderDocumentsFlag',
                 array(
-                    'label' => 'Entscheid: Ausliefer-Dokumente werden mitgeliefert.',
-                    'description'   => 'Ja = Dokument liegt vor und muss in Sendung mitgeliefert werden.<br>Nein = es liegen keine Lieferdokumente vor.',
-                    'store' => array(
+                    'label'       => 'Entscheid: Ausliefer-Dokumente werden mitgeliefert.',
+                    'description' => 'Ja = Dokument liegt vor und muss in Sendung mitgeliefert werden.<br>Nein = es liegen keine Lieferdokumente vor.',
+                    'store'       => array(
                         array('1', 'Yes'),
-                        array('0', 'No')
-                   )
-               )
-           );
+                        array('0', 'No'),
+                    ),
+                )
+            );
 
             $ycForm->setElement('select', 'sYellowCubeDocMimeType',
                 array(
-                    'label' => 'Document MIME Type',
-                    'description'   => 'MIME-Typ als Extention des Lieferbeleges. [pdf|pcl] Inhalt des Streams muss mit der Extention übereinstimmen.',
-                    'store' => array(
+                    'label'       => 'Document MIME Type',
+                    'description' => 'MIME-Typ als Extention des Lieferbeleges. [pdf|pcl] Inhalt des Streams muss mit der Extention übereinstimmen.',
+                    'store'       => array(
                         array('pdf', 'PDF'),
-                        array('pcl', 'PCL')
-                   )
-               )
-           );
+                        array('pcl', 'PCL'),
+                    ),
+                )
+            );
 
             $ycForm->setElement('select', 'sYellowCubeDocType',
                 array(
@@ -639,43 +639,43 @@ class Shopware_Plugins_Backend_AsignYellowcube_Bootstrap extends Shopware_Compon
                         array('ZS', 'Zahlschein'),
                         array('BP', 'Bulletin de payement'),
                         array('BV', 'bollettino di versamento'),
-                        array('PF', 'Payment form')
-                   )
-               )
-           );
+                        array('PF', 'Payment form'),
+                    ),
+                )
+            );
 
             // CRON JOB informations only...
             $ycForm->setElement('button', 'Cronjob', array('label' => 'CRON Job Configuration'));
             $ycForm->setElement('select', 'sCronArtFlag',
                 array(
-                    'label' => 'Default Article Mode',
-                    'required'  => 1,
-                    'store' => array(
-                        array('I','Insert Article'),
-                        array('U','Update Article'),
-                        array('D','Deactivate Article')
-                   )
-               )
-           );
+                    'label'    => 'Default Article Mode',
+                    'required' => 1,
+                    'store'    => array(
+                        array('I', 'Insert Article'),
+                        array('U', 'Update Article'),
+                        array('D', 'Deactivate Article'),
+                    ),
+                )
+            );
             $ycForm->setElement('text', 'sYellowCubeCronHash',
                 array(
-                    'required'      => 1,
-                    'label'         => 'Cron-job Hash value',
-                    'description'   => 'Security measure to make sure the script is not called anonymously without Hash Tag',
-                    'value'         => 'asignsw007'
-               )
-           );
+                    'required'    => 1,
+                    'label'       => 'Cron-job Hash value',
+                    'description' => 'Security measure to make sure the script is not called anonymously without Hash Tag',
+                    'value'       => 'asignsw007',
+                )
+            );
 
             // Developer mode informations only...
             $ycForm->setElement('button', 'Developer', array('label' => 'Developer mode'));
             $ycForm->setElement('text', 'sYellowCubeNotifyEmail',
                 array(
-                    'required'      => 0,
-                    'label'         => 'Developer Email-address',
-                    'description'   => 'This should be used only during Development or debugging process. YC XML Request and Response will be sent on this email address.',
-                    'value'         => ''
-               )
-           );
+                    'required'    => 0,
+                    'label'       => 'Developer Email-address',
+                    'description' => 'This should be used only during Development or debugging process. YC XML Request and Response will be sent on this email address.',
+                    'value'       => '',
+                )
+            );
         } catch (Exception $e) {
             throw new Exception('<b>Fehler beim erstellen des Einstellungsformulars</b><br />' . $e->getMessage());
         }
@@ -730,7 +730,7 @@ class Shopware_Plugins_Backend_AsignYellowcube_Bootstrap extends Shopware_Compon
             "UPDATE `s_core_snippets` SET `value` = 'EORI No.' WHERE `name` = 'billing/text_1_label'",
             "UPDATE `s_core_snippets` SET `value` = 'EORI Number for customer' WHERE `name` = 'billing/text_1_support'",
             "UPDATE `s_core_snippets` SET `value` = 'This field is also visible during Registration and Account Edit form on Shop Front-end.' WHERE `name` = 'billing/text_1_help_text'",
-            "UPDATE `s_core_snippets` SET `value` = 'Specify EORI No.' WHERE `name` = 'billing/text_1_help_title'"
+            "UPDATE `s_core_snippets` SET `value` = 'Specify EORI No.' WHERE `name` = 'billing/text_1_help_title'",
         );
 
         //run the query
@@ -742,7 +742,7 @@ class Shopware_Plugins_Backend_AsignYellowcube_Bootstrap extends Shopware_Compon
     /**
      * Checks if the column exists in the table mentioned
      *
-     * @param string $sTable  Table name where to check?
+     * @param string $sTable Table name where to check?
      * @param string $sColumn Table name what to check?
      *
      * @return true
@@ -807,7 +807,7 @@ class Shopware_Plugins_Backend_AsignYellowcube_Bootstrap extends Shopware_Compon
         $this->doExecuteCron('inv');
     }
 
-     /**
+    /**
      * Run the article cron as per requirement...
      * Types: articles, orders and inventory
      *
@@ -823,18 +823,19 @@ class Shopware_Plugins_Backend_AsignYellowcube_Bootstrap extends Shopware_Compon
 
         // trigger based on conditions?
         switch ($sType) {
-            case 'art': $cronResource->autoInsertArticles($sMode, $sFlag, true);
-            break;
-
-            case 'ord': $cronResource->autoSendYCOrders($sMode, true);
-            break;
-
-            case 'inv': $cronResource->autoFetchInventory(true);
-            break;
-
-            default: $cronResource->autoInsertArticles('xx', $sFlag, true); // send all articles
-                     $cronResource->autoSendYCOrders(null, true); // send all orders
-            break;
+            case 'art':
+                $cronResource->autoInsertArticles($sMode, $sFlag, true);
+                break;
+            case 'ord':
+                $cronResource->autoSendYCOrders(true);
+                break;
+            case 'inv':
+                $cronResource->autoFetchInventory(true);
+                break;
+            default:
+                $cronResource->autoInsertArticles('xx', $sFlag, true); // send all articles
+                $cronResource->autoSendYCOrders(true); // send all orders
+                break;
         }
     }
 
