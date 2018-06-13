@@ -189,13 +189,22 @@ class Repository extends ModelRepository
         $sSql .= " JOIN s_user su ON su.id = so.userID";
         $sSql .= " JOIN s_premium_dispatch spd ON so.dispatchID = spd.id";
         $sSql .= " JOIN s_core_locales scl ON so.language = scl.id";
-        $sSql .= " JOIN asign_yellowcube_orders aso ON so.id = aso.ordid";
+
+        // cron?
+        if ($isCron) {
+            $sSql .= " JOIN asign_yellowcube_orders aso ON so.id = aso.ordid";
+        }
 
         // if directly from Thank you page
         if ($isDirect) {
             $sSql .= " WHERE so.ordernumber = '" . $ordid . "'";
         } else {
             $sSql .= " WHERE so.id = '" . $ordid . "'";
+        }
+
+        // cron?
+        if ($isCron) {
+            $sSql .= " AND aso.ycReference = 0";
         }
 
         $aOrders = Shopware()->Db()->fetchRow($sSql);
