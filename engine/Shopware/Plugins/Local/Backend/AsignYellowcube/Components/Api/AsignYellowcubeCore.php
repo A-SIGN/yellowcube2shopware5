@@ -207,8 +207,7 @@ class AsignYellowcubeCore
 
         // ping and get response...
         try {
-            $aResponse = $this->oSoapApi->callFunction($aFunc[$sType], $oObject);
-            return $aResponse;
+            return $this->oSoapApi->callFunction($aFunc[$sType], $oObject);
         } catch (Exception $soapex) {
             $this->oLogs->saveLogsData('getYCGeneralDataStatus', $soapex);
             return (array(

@@ -371,24 +371,27 @@ class AsignSoapClientApi
      * @param string $fnc Function to be called
      * @param object $params object of params to be passed
      *
-     * @return null
      */
     public function callFunction($fnc, $params = null)
     {
         try{
             // soap call the function
             $oClient = $this->initSoap();
-            $sResponse = $oClient->$fnc($params);
+            $oResponse = $oClient->$fnc($params);
+
+            if (!($oResponse instanceof \stdClass)) {
+                throw new \Exception("Return isn't an object!");
+            }
 
             // DEBUG: only for checking XML output
             $devMail = $this->getDeveloperEmail();
             if ($devMail != "") {
                 @mail($devMail, "SOAP_REQUEST", print_r($oClient->__getLastRequest(), 1)); // YC request
-                @mail($devMail, "SOAP_RESPONSE", print_r($sResponse, 1)); // YC response
+                @mail($devMail, "SOAP_RESPONSE", print_r($oResponse, 1)); // YC response
             }
             // END-DEBUG
 
-            return $sResponse;
+            return get_object_vars($oResponse);
         } catch(\Exception $sEx) {
             $oLogs = Shopware()->Models()->getRepository("Shopware\CustomModels\AsignModels\Errorlogs\Errorlogs");
             $oLogs->saveLogsData('SOAP_CALL', $sEx);

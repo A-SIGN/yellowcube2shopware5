@@ -80,40 +80,41 @@ class AsignYellowcubeCron
             // 12 - completely_paid
             // 2 - completed
             // as per s_core_status
-            $sWhere = " and `cleareddate` IS NOT NULL and `cleared` = 12" .
-                        " and `status` != " . \Shopware\Models\Order\Status::ORDER_STATE_READY_FOR_DELIVERY .
-                        " and `status` != " . \Shopware\Models\Order\Status::ORDER_STATE_CANCELLED .
-                        " and `status` != " . \Shopware\Models\Order\Status::ORDER_STATE_CLARIFICATION_REQUIRED .
-                        " and `status` != " . \Shopware\Models\Order\Status::ORDER_STATE_COMPLETELY_DELIVERED;
+            $sWhere = " and `status` != " . \Shopware\Models\Order\Status::ORDER_STATE_READY_FOR_DELIVERY .
+                      " and `status` != " . \Shopware\Models\Order\Status::ORDER_STATE_CANCELLED .
+                      " and `status` != " . \Shopware\Models\Order\Status::ORDER_STATE_CLARIFICATION_REQUIRED .
+                      " and `status` != " . \Shopware\Models\Order\Status::ORDER_STATE_COMPLETELY_DELIVERED;
 
-            $aOrders  = Shopware()->Db()->fetchAll("select `id` from `s_order` where `ordernumber` > 0" . $sWhere);
-           
+            $aOrders  = Shopware()->Db()->fetchAll("select `id`, `paymentid`, cleared from `s_order` where `ordernumber` > 0" . $sWhere);
+
             if (count($aOrders) > 0) {
                 foreach ($aOrders as $order) {                    
                     $ordid = $order['id'];
-                    $oDetails = $this->objOrders->getOrderDetails($ordid, false, true);                    
 
                     // check if the Status in the Order table
                     $sRequestField = $this->getOrderRequestField($ordid);
                     $iStatusCode = $this->getRecordedStatus($ordid, 'asign_yellowcube_orders', $sRequestField);
                     $sResponseType = '';
-                    
+
+                    $blPaymentSucess = ( $order['paymentid'] <> 5 || $order['paymentid'] == 5 && $order['cleared'] == 12 );
+
                     // get YC response                    
-                    if ($iStatusCode == null && $this->objOrders->getFieldData($ordid, $sRequestField) == '') {
+                    if ($iStatusCode == null && $this->objOrders->getFieldData($ordid, $sRequestField) == '' && $blPaymentSucess ) {
                         // execute the order object
                         echo "Submitting Order for OrderID: " . $ordid . "\n";
-                        $aResponse = $this->objYcubeCore->createYCCustomerOrder($oDetails);                        
-                    }  elseif ($iStatusCode < 100) {
+                        $oDetails = $this->objOrders->getOrderDetails($ordid);
+                        $aResponse = $this->objYcubeCore->createYCCustomerOrder($oDetails);
+                    }  elseif ($iStatusCode < 100 && $blPaymentSucess ) {
                         // get the status
                         echo "Requesting WAB status for OrderID: " . $ordid . "\n";
                         $aResponse = $this->objYcubeCore->getYCGeneralDataStatus($ordid, "WAB");
                         $sResponseType = 'WAB';
-                    } elseif ($iStatusCode == 100) {
+                    } elseif ($iStatusCode == 100 && $blPaymentSucess) {
                         // get the WAR status
                         echo "Requesting WAR status for OrderID: " . $ordid . "\n";
                         $aResponse = $this->objYcubeCore->getYCGeneralDataStatus($ordid, "WAR");
                         $sResponseType = 'WAR';
-                    }                   
+                    }
 
                     // increment the counter
                     if (isset($aResponse) && count((array)$aResponse) !== 0) {
