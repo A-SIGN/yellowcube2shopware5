@@ -174,12 +174,12 @@ class AsignYellowcubeCore
     /**
      * Returns status for both order/article from Yellowcube
      *
-     * @param integer $itemId Order/Article ID
+     * @param integer $iItemId Order/Article ID
      * @param string $sType Defines if its WAB or ART
      *
      * @return array
      */
-    public function getYCGeneralDataStatus($itemId, $sType)
+    public function getYCGeneralDataStatus($iItemId, $sType)
     {
         // define params
         $aParams = $this->getInitialParams($sType);
@@ -199,10 +199,10 @@ class AsignYellowcubeCore
             $oObject->ControlReference->TransMaxWait = $this->oSoapApi->getTransMaxTime();
 
             // get Reference number for the YC status
-            $oObject->CustomerOrderNo = $this->getYCReferenceNumber($itemId, $sType);
+            $oObject->CustomerOrderNo = $this->getYCReferenceNumber($iItemId, $sType);
         } elseif ($sType == "ART" || $sType == "WAB") {
             // get Reference number for the YC status
-            $oObject->Reference = $this->getYCReferenceNumber($itemId, $sType);
+            $oObject->Reference = $this->getYCReferenceNumber($iItemId, $sType);
         }
 
         // ping and get response...
@@ -602,7 +602,7 @@ class AsignYellowcubeCore
                 return $zipValue;
             }
         } catch (Exception $sEx) {
-            $this->oLogs->saveLogsData('verifyZipStatus', $soapex);
+            $this->oLogs->saveLogsData('verifyZipStatus', $sEx);
             return (array(
                 'success' => false,
                 'message' => $sEx->getMessage(),
@@ -687,12 +687,12 @@ class AsignYellowcubeCore
     /**
      * Returns stored Yellowcube reference
      *
-     * @param integer $myId Object id
+     * @param integer $iId Object id
      * @param string $sType Type of query
      *
-     * @return array
+     * @return integer $iReference
      */
-    public function getYCReferenceNumber($myId, $sType)
+    public function getYCReferenceNumber($iId, $sType)
     {
         $aTables = array(
             'ART' => 'asign_yellowcube_product',
@@ -700,20 +700,21 @@ class AsignYellowcubeCore
             'WAR' => 'asign_yellowcube_orders',
         );
 
-        // if Type is ART or WAB
-        if ($sType === 'ART') {
+        // choose column
+        if ($sType == 'ART') {
             $sColumn = 'artid';
         } else {
             $sColumn = 'ordid';
         }
 
-        $sReference = Shopware()->Db()->fetchOne("select `ycReference` from `" . $aTables[$sType] . "` where `" . $sColumn . "` = '" . $myId . "'");
-        // if second calling then?
+        // get id
         if ($sType == "WAR") {
-            $sReference = Shopware()->Db()->fetchOne("select `ordernumber` from `s_order` where `id` = '" . $myId . "'");
+            $iReference = Shopware()->Db()->fetchOne("select `ordernumber` from `s_order` where `id` = '" . $iId . "'");
+        } else {
+            $iReference = Shopware()->Db()->fetchOne("select `ycReference` from `" . $aTables[$sType] . "` where `" . $sColumn . "` = '" . $iId . "'");
         }
 
-        return $sReference;
+        return $iReference;
     }
 
     /**

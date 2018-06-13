@@ -368,16 +368,17 @@ class AsignSoapClientApi
      * Performs SOAP call using passed function. Function name
      * varies for every WSDL.
      *
-     * @param string $fnc Function to be called
-     * @param object $params object of params to be passed
+     * @param string $sFnc Function to be called
+     * @param object $oParams object of params to be passed
      *
+     * @return array
      */
-    public function callFunction($fnc, $params = null)
+    public function callFunction($sFnc, $oParams = null)
     {
         try{
             // soap call the function
             $oClient = $this->initSoap();
-            $oResponse = $oClient->$fnc($params);
+            $oResponse = $oClient->$sFnc($oParams);
 
             if (!($oResponse instanceof \stdClass)) {
                 throw new \Exception("Return isn't an object!");

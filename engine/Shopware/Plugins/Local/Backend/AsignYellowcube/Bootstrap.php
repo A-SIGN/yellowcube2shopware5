@@ -793,7 +793,7 @@ class Shopware_Plugins_Backend_AsignYellowcube_Bootstrap extends Shopware_Compon
      */
     public function onRunOrdCron(Shopware_Components_Cron_CronJob $job)
     {
-        $this->doExecuteCron('ord', 'pp');
+        $this->doExecuteCron('ord');
     }
 
     /**

@@ -89,12 +89,10 @@ Ext.define('Shopware.apps.AsignYellowcube.controller.Order', {
 
         if (selections[0]) {
             var me = this,
-            store = me.subApplication.ordStore,
-            record = selections[0],
-            warcount = record.get('ycWarCount'),
-            ismanual = record.get('ismanual'),
-            finalInit = null, finalWab = null, finalWar = null,
-            orderId = record.get('ordid');
+                record = selections[0],
+                warcount = record.get('ycWarCount'),
+                finalInit = null, finalWab = null, finalWar = null,
+                orderId = record.get('ordid');
 
             // frame the response for initial, wab and war
             if ( record.get('ycReference') == 0 ) {

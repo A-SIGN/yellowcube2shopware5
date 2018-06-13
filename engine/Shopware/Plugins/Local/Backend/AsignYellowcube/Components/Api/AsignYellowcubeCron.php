@@ -74,62 +74,55 @@ class AsignYellowcubeCron
      */
     public function autoSendYCOrders($isCron = false)
     {
-        $iCount   = 0;
-        
-        try {
-            // 12 - completely_paid
-            // 2 - completed
-            // as per s_core_status
-            $sWhere = " and `status` != " . \Shopware\Models\Order\Status::ORDER_STATE_READY_FOR_DELIVERY .
-                      " and `status` != " . \Shopware\Models\Order\Status::ORDER_STATE_CANCELLED .
-                      " and `status` != " . \Shopware\Models\Order\Status::ORDER_STATE_CLARIFICATION_REQUIRED .
-                      " and `status` != " . \Shopware\Models\Order\Status::ORDER_STATE_COMPLETELY_DELIVERED;
+        $iCount = 0;
 
-            $aOrders  = Shopware()->Db()->fetchAll("select `id`, `paymentid`, cleared from `s_order` where `ordernumber` > 0" . $sWhere);
+        // check order status
+        $sWhere = " and `status` != " . \Shopware\Models\Order\Status::ORDER_STATE_READY_FOR_DELIVERY .
+                  " and `status` != " . \Shopware\Models\Order\Status::ORDER_STATE_CANCELLED .
+                  " and `status` != " . \Shopware\Models\Order\Status::ORDER_STATE_CLARIFICATION_REQUIRED .
+                  " and `status` != " . \Shopware\Models\Order\Status::ORDER_STATE_COMPLETELY_DELIVERED;
 
-            if (count($aOrders) > 0) {
-                foreach ($aOrders as $order) {                    
-                    $ordid = $order['id'];
+        // check payment status
+        $sWhere .= " and `paymentID` != 5 or (`paymentID` = 5 and `cleared` = 12)";
+
+        $aOrders  = Shopware()->Db()->fetchAll("select `id`, `paymentid`, cleared from `s_order` where `ordernumber` > 0" . $sWhere);
+
+        if (count($aOrders) > 0) {
+            foreach ($aOrders as $order) {
+                try {
+                    $iOrdid = $order['id'];
 
                     // check if the Status in the Order table
-                    $sRequestField = $this->getOrderRequestField($ordid);
-                    $iStatusCode = $this->getRecordedStatus($ordid, 'asign_yellowcube_orders', $sRequestField);
-                    $sResponseType = '';
+                    $sRequestField = $this->getOrderRequestField($iOrdid);
+                    $iStatusCode = $this->getRecordedStatus($iOrdid, 'asign_yellowcube_orders', $sRequestField);
+                    $aResponse = array();
 
-                    $blPaymentSucess = ( $order['paymentid'] <> 5 || $order['paymentid'] == 5 && $order['cleared'] == 12 );
-
-                    // get YC response                    
-                    if (($iStatusCode == null || $iStatusCode == 101) && $this->objOrders->getFieldData($ordid, $sRequestField) == '' && $blPaymentSucess ) {
+                    // get YC response
+                    if (($iStatusCode == null || $iStatusCode == 101) && $this->objOrders->getFieldData($iOrdid, $sRequestField) == '') {
                         // execute the order object
-                        echo "Submitting Order for OrderID: " . $ordid . "\n";
-                        $oDetails = $this->objOrders->getOrderDetails($ordid);
+                        echo "Submitting Order for OrderID: " . $iOrdid . "\n";
+                        $oDetails = $this->objOrders->getOrderDetails($iOrdid);
                         $aResponse = $this->objYcubeCore->createYCCustomerOrder($oDetails);
-                    }  elseif ($iStatusCode < 100 && $blPaymentSucess ) {
+                    }  elseif ($iStatusCode < 100) {
                         // get the status
-                        echo "Requesting WAB status for OrderID: " . $ordid . "\n";
-                        $aResponse = $this->objYcubeCore->getYCGeneralDataStatus($ordid, "WAB");
-
-                        $sResponseType = 'WAB';
-                    } elseif ($iStatusCode == 100 && $blPaymentSucess) {
+                        echo "Requesting WAB status for OrderID: " . $iOrdid . "\n";
+                        $aResponse = $this->objYcubeCore->getYCGeneralDataStatus($iOrdid, "WAB");
+                    } elseif ($iStatusCode == 100) {
                         // get the WAR status
-                        echo "Requesting WAR status for OrderID: " . $ordid . "\n";
-                        $aResponse = $this->objYcubeCore->getYCGeneralDataStatus($ordid, "WAR");
-                        $sResponseType = 'WAR';
+                        echo "Requesting WAR status for OrderID: " . $iOrdid . "\n";
+                        $aResponse = $this->objYcubeCore->getYCGeneralDataStatus($iOrdid, "WAR");
                     }
 
                     // increment the counter
-                    if (isset($aResponse) && count((array)$aResponse) !== 0) {
-                        $this->objOrders->saveOrderResponseData($aResponse, $ordid);
+                    if (count($aResponse) !== 0) {
+                        $this->objOrders->saveOrderResponseData($aResponse, $iOrdid);
+                        $iCount++;
                     }
 
-                    // increment the counter
-                    if (count($aResponse) > 0) {
-                        $iCount = $iCount + 1;
-                    }
+                } catch(Exception $e) {
+                    $this->objErrorLog->saveLogsData('Orders-CRON', $e);
                 }
             }
-        } catch(Exception $e) {            
-            $this->objErrorLog->saveLogsData('Orders-CRON', $e);
         }
         
         // if cron then log in database too..
