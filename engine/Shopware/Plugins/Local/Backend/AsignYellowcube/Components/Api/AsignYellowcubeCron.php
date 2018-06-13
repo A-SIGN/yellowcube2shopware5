@@ -99,7 +99,7 @@ class AsignYellowcubeCron
                     $blPaymentSucess = ( $order['paymentid'] <> 5 || $order['paymentid'] == 5 && $order['cleared'] == 12 );
 
                     // get YC response                    
-                    if ($iStatusCode == null && $this->objOrders->getFieldData($ordid, $sRequestField) == '' && $blPaymentSucess ) {
+                    if (($iStatusCode == null || $iStatusCode == 101) && $this->objOrders->getFieldData($ordid, $sRequestField) == '' && $blPaymentSucess ) {
                         // execute the order object
                         echo "Submitting Order for OrderID: " . $ordid . "\n";
                         $oDetails = $this->objOrders->getOrderDetails($ordid);
@@ -108,6 +108,7 @@ class AsignYellowcubeCron
                         // get the status
                         echo "Requesting WAB status for OrderID: " . $ordid . "\n";
                         $aResponse = $this->objYcubeCore->getYCGeneralDataStatus($ordid, "WAB");
+
                         $sResponseType = 'WAB';
                     } elseif ($iStatusCode == 100 && $blPaymentSucess) {
                         // get the WAR status
@@ -190,10 +191,14 @@ class AsignYellowcubeCron
                         $aResponse = $this->objYcubeCore->getYCGeneralDataStatus($artid, "ART");
                     }
 
-                    // increment the counter
-                    if (count($aResponse) > 0) {
-                        $this->objProduct->saveArticleResponseData($aResponse, $artid);
-                        $iCount = $iCount + 1;
+                    try {
+                        // increment the counter
+                        if (count($aResponse) > 0) {
+                            $this->objProduct->saveArticleResponseData($aResponse, $artid);
+                            $iCount = $iCount + 1;
+                        }
+                    } catch(\Exception $e) {
+                        $this->objErrorLog->saveLogsData('Articles-CRON', $e);
                     }
                 }
             }

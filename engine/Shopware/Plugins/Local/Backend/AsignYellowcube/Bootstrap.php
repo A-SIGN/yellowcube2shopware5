@@ -816,7 +816,7 @@ class Shopware_Plugins_Backend_AsignYellowcube_Bootstrap extends Shopware_Compon
      *
      * @return void
      */
-    private function doExecuteCron($sType, $sMode)
+    private function doExecuteCron($sType, $sMode = null)
     {
         $sFlag = Shopware()->Plugins()->Backend()->AsignYellowcube()->Config()->sCronArtFlag;
         $cronResource = new \Shopware\AsignYellowcube\Components\Api\AsignYellowcubeCron();

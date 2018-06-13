@@ -218,15 +218,20 @@ class Repository extends ModelRepository
      * received from Yellowcube
      *
      * @param array $aResponseData Array of response
-     * @param string $artid        Article id
+     * @param string $artid Article id
      *
      * @return null
+     * @throws \Exception
      */
     public function saveArticleResponseData($aResponseData, $artid)
     {
         // if response is not "E" then?
         if ($aResponseData['StatusType'] !== 'E') {
             $sReference = ", `ycReference` = '" . $aResponseData['Reference'] . "'";
+        }
+
+        if (isset($aResponseData['data']['success']) && !$aResponseData['data']['success']) {
+            throw new \Exception($aResponseData['data']['message']);
         }
 
         // serialize the data

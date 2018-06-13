@@ -86,6 +86,7 @@ Ext.define('Shopware.apps.AsignYellowcube.controller.Order', {
      * @param record
      */
     onSelectionChange: function(sm, selections) {
+
         if (selections[0]) {
             var me = this,
             store = me.subApplication.ordStore,
@@ -96,7 +97,7 @@ Ext.define('Shopware.apps.AsignYellowcube.controller.Order', {
             orderId = record.get('ordid');
 
             // frame the response for initial, wab and war
-            if (ismanual && record.get('ycReference') == 0) {
+            if ( record.get('ycReference') == 0 ) {
                 Ext.getCmp('btnManual').show();
                 Ext.getCmp('btnInit').hide();
                 Ext.getCmp('fldWab').hide();
@@ -173,7 +174,10 @@ Ext.define('Shopware.apps.AsignYellowcube.controller.Order', {
                 // if its an E?
                 if (key === 'StatusType' && value === 'E') {
                     var errstyle = 'style="color: #F00;"';
+                } else {
+                    Ext.getCmp('btnManual').hide();
                 }
+
                 finalWab += '<tr><td ' + errstyle + '><b>' + key + ':</b></td><td ' + errstyle + '>' + value + '</td></tr>';
             });
             finalWab += '</table><br />';
@@ -184,6 +188,7 @@ Ext.define('Shopware.apps.AsignYellowcube.controller.Order', {
                 Ext.getCmp('btnWar').setDisabled(false);
             } else {
                 // because the status is E not S. So asking for WAR response is pointlesss
+                Ext.getCmp('btnInit').setDisabled(false);
                 Ext.getCmp('btnWar').setDisabled(true);
             }
         } else {
@@ -250,24 +255,30 @@ Ext.define('Shopware.apps.AsignYellowcube.controller.Order', {
 
         // print initial response
         if (finaltext != null) {
-            Ext.getCmp('btnManual').hide(); // hide manual button
+            //Ext.getCmp('btnManual').hide(); // hide manual button
             Ext.getCmp('btnInit').show();
             Ext.getCmp('resplabel').setText(finaltext, false);
         }
 
         // print WAB response
         if (finalWab != null) {
-            Ext.getCmp('btnManual').hide(); // hide manual button
+            //Ext.getCmp('btnManual').hide(); // hide manual button
             Ext.getCmp('fldWab').show();
             Ext.getCmp('wablabel').setText(finalWab, false);
+        } else {
+            Ext.getCmp('fldWab').hide();
         }
 
         // print WAR response
         if (finalWar != null) {
             Ext.getCmp('btnManual').hide(); // hide manual button
+            Ext.getCmp('btnInit').hide();
             Ext.getCmp('fldWar').show();
             Ext.getCmp('warlabel').setText(finalWar, false);
+        } else {
+            Ext.getCmp('fldWar').hide();
         }
+
     },
 
     /**
