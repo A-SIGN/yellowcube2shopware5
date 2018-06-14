@@ -4,7 +4,7 @@
  * This file handles CRON related functions
  *
  * PHP version 5
- * 
+ *
  * @category  asign
  * @package   AsignYellowcube
  * @author    entwicklung@a-sign.ch
@@ -22,51 +22,51 @@ use Shopware\AsignYellowcube\Components\Api\AsignYellowcubeCore;
 use Shopware\AsignYellowcube\Helpers\ApiClasses\AsignSoapClientApi;
 
 /**
-* Handles CRON related function
-* 
-* @category Asign
-* @package  AsignYellowcube
-* @author   entwicklung@a-sign.ch
-* @link     http://www.a-sign.ch
-*/
+ * Handles CRON related function
+ *
+ * @category Asign
+ * @package  AsignYellowcube
+ * @author   entwicklung@a-sign.ch
+ * @link     http://www.a-sign.ch
+ */
 class AsignYellowcubeCron
-{    
-    /** @var constants **/
-    const YCRESPONSE    = 'ycResponse';
+{
+    /** @var constants * */
+    const YCRESPONSE = 'ycResponse';
     const YCWABRESPONSE = 'ycWabResponse';
     const YCWARRESPONSE = 'ycWarResponse';
 
-    /** @var object **/
+    /** @var object * */
     protected $objErrorLog = null;
 
-    /** @var object **/
+    /** @var object * */
     protected $objProduct = null;
 
-    /** @var object **/
+    /** @var object * */
     protected $objOrders = null;
 
-    /** @var object **/
+    /** @var object * */
     protected $objInventory = null;
 
-    /** @var object **/
+    /** @var object * */
     protected $objYcubeCore = null;
 
     /**
      * Class constructor
      *
      * @return null
-     */    
+     */
     public function __construct()
     {
         $this->objYcubeCore = new AsignYellowcubeCore();
-        $this->objErrorLog  = Shopware()->Models()->getRepository("Shopware\CustomModels\AsignModels\Errorlogs\Errorlogs");
-        $this->objProduct   = Shopware()->Models()->getRepository("Shopware\CustomModels\AsignModels\Product\Product");
-        $this->objOrders    = Shopware()->Models()->getRepository("Shopware\CustomModels\AsignModels\Orders\Orders");
-        $this->objInventory = Shopware()->Models()->getRepository("Shopware\CustomModels\AsignModels\Inventory\Inventory");        
+        $this->objErrorLog = Shopware()->Models()->getRepository("Shopware\CustomModels\AsignModels\Errorlogs\Errorlogs");
+        $this->objProduct = Shopware()->Models()->getRepository("Shopware\CustomModels\AsignModels\Product\Product");
+        $this->objOrders = Shopware()->Models()->getRepository("Shopware\CustomModels\AsignModels\Orders\Orders");
+        $this->objInventory = Shopware()->Models()->getRepository("Shopware\CustomModels\AsignModels\Inventory\Inventory");
     }
-    
+
     /**
-     * Creates New customer Order in Yellowcube     
+     * Creates New customer Order in Yellowcube
      *
      * @param bool $isCron Called via cron
      *
@@ -78,14 +78,14 @@ class AsignYellowcubeCron
 
         // check order status
         $sWhere = " and `status` != " . \Shopware\Models\Order\Status::ORDER_STATE_READY_FOR_DELIVERY .
-                  " and `status` != " . \Shopware\Models\Order\Status::ORDER_STATE_CANCELLED .
-                  " and `status` != " . \Shopware\Models\Order\Status::ORDER_STATE_CLARIFICATION_REQUIRED .
-                  " and `status` != " . \Shopware\Models\Order\Status::ORDER_STATE_COMPLETELY_DELIVERED;
+            " and `status` != " . \Shopware\Models\Order\Status::ORDER_STATE_CANCELLED .
+            " and `status` != " . \Shopware\Models\Order\Status::ORDER_STATE_CLARIFICATION_REQUIRED .
+            " and `status` != " . \Shopware\Models\Order\Status::ORDER_STATE_COMPLETELY_DELIVERED;
 
         // check payment status
         $sWhere .= " and `paymentID` != 5 or (`paymentID` = 5 and `cleared` = 12)";
 
-        $aOrders  = Shopware()->Db()->fetchAll("select `id`, `paymentid`, cleared from `s_order` where `ordernumber` > 0" . $sWhere);
+        $aOrders = Shopware()->Db()->fetchAll("select `id`, `paymentid`, cleared from `s_order` where `ordernumber` > 0" . $sWhere);
 
         if (count($aOrders) > 0) {
             foreach ($aOrders as $order) {
@@ -103,7 +103,7 @@ class AsignYellowcubeCron
                         echo "Submitting Order for OrderID: " . $iOrdid . "\n";
                         $oDetails = $this->objOrders->getOrderDetails($iOrdid);
                         $aResponse = $this->objYcubeCore->createYCCustomerOrder($oDetails);
-                    }  elseif ($iStatusCode < 100) {
+                    } elseif ($iStatusCode < 100) {
                         // get the status
                         echo "Requesting WAB status for OrderID: " . $iOrdid . "\n";
                         $aResponse = $this->objYcubeCore->getYCGeneralDataStatus($iOrdid, "WAB");
@@ -119,92 +119,93 @@ class AsignYellowcubeCron
                         $iCount++;
                     }
 
-                } catch(Exception $e) {
+                } catch (Exception $e) {
                     $this->objErrorLog->saveLogsData('Orders-CRON', $e);
                 }
             }
         }
-        
+
         // if cron then log in database too..
         if ($isCron) {
             $this->objErrorLog->saveLogsData('Orders-CRON', "Total Yellowcube Orders created: " . $iCount, true);
         } else {
             return $iCount;
-        }        
+        }
     }
-    
+
     /**
-     * Inserts Article Master data to Yellowcube     
-     * 
+     * Inserts Article Master data to Yellowcube
+     *
      * @param string $sMode - Mode of handling
      *                        ax - Only active ones
      *                        ia - Only Inactive ones
-     *                        xx - All articles    
+     *                        xx - All articles
      * @param string $sFlag - Type of action
-     *                        Insert(I), 
-     *                        Update(U), 
+     *                        Insert(I),
+     *                        Update(U),
      *                        Deactivate/Delete(D)
      *
-     * @return array
+     * @return integer|void
      */
     public function autoInsertArticles($sMode, $sFlag, $isCron = false)
-    {        
-        $iCount = 0;$where = '';
+    {
+        $iCount = 0;
+        $where = '';
 
         // form where condition based on options...
-        switch($sMode) {
-        case "ax": $where = ' WHERE active = 1';
-            break;
-            
-        case "ix": $where = ' WHERE active = 0';
-            break;
-            
-        case "xx": $where = ' WHERE 1';
-            break;
+        switch ($sMode) {
+            case "ax":
+                $where = ' WHERE active = 1';
+                break;
+
+            case "ix":
+                $where = ' WHERE active = 0';
+                break;
+
+            case "xx":
+                $where = ' WHERE 1';
+                break;
         }
 
-        try {
-            // get all the articles based on above condition...
-            $aArticles  = Shopware()->Db()->fetchAll("SELECT `id` FROM `s_articles`" . $where);
-            
-            if (count($aArticles) > 0) {
-                foreach ($aArticles as $article) {                    
+        // get all the articles based on above condition...
+        $aArticles = Shopware()->Db()->fetchAll("SELECT `id` FROM `s_articles`" . $where);
+
+        if (count($aArticles) > 0) {
+            foreach ($aArticles as $article) {
+
+                try {
                     $artid = $article['id'];
                     $oDetails = $this->objProduct->getArticleDetails($article['id'], true);
                     $iStatusCode = $this->getRecordedStatus($artid, 'asign_yellowcube_product');
 
                     // if not 10 then insert the article
-                    // execute the article object                    
+                    // execute the article object
                     if ($iStatusCode != 10) {
                         echo "Submitting Article for Article-ID: " . $artid . "\n";
                         $aResponse = $this->objYcubeCore->insertArticleMasterData($oDetails, $sFlag);
                     } elseif ($iStatusCode == 10 && $iStatusCode != 100) {
-                        // get the status                                
+                        // get the status
                         echo "Getting Article status for Article-ID: " . $artid . "\n";
                         $aResponse = $this->objYcubeCore->getYCGeneralDataStatus($artid, "ART");
                     }
 
-                    try {
-                        // increment the counter
-                        if (count($aResponse) > 0) {
-                            $this->objProduct->saveArticleResponseData($aResponse, $artid);
-                            $iCount = $iCount + 1;
-                        }
-                    } catch(\Exception $e) {
-                        $this->objErrorLog->saveLogsData('Articles-CRON', $e);
+                    // increment the counter
+                    if (count($aResponse) > 0) {
+                        $this->objProduct->saveArticleResponseData($aResponse, $artid);
+                        $iCount++;
                     }
+                } catch (\Exception $e) {
+                    $this->objErrorLog->saveLogsData('Articles-CRON', $e);
                 }
             }
-        } catch(Exception $e) {            
-            $this->objErrorLog->saveLogsData('Articles-CRON', $e);
         }
-        
+
         // if cron then log in database too..
         if ($isCron) {
             $this->objErrorLog->saveLogsData('Articles-CRON', "Total articles sent to Yellowcube: " . $iCount, true);
         } else {
             return $iCount;
-        }         
+        }
     }
 
     /**
@@ -216,17 +217,17 @@ class AsignYellowcubeCron
      */
     public function autoFetchInventory($isCron = false)
     {
-        try {            
+        try {
             $aResponse = $this->objYcubeCore->getInventory();
-            
+
             // update
-            if (count($aResponse) > 0) {                
-                $iCount = $this->objInventory->saveInventoryData($aResponse["data"]);    
-            } 
-        } catch(Exception $e) {
+            if (count($aResponse) > 0) {
+                $iCount = $this->objInventory->saveInventoryData($aResponse["data"]);
+            }
+        } catch (Exception $e) {
             $this->objErrorLog->saveLogsData('Inventory-CRON', $e);
         }
-        
+
         // if cron then log in database too..
         if ($isCron) {
             $this->objErrorLog->saveLogsData('Inventory-CRON', "Total updated items: " . $iCount, true);
@@ -242,7 +243,7 @@ class AsignYellowcubeCron
      * @return  string
      */
     protected function getOrderRequestField($orderId)
-    {        
+    {
         $sResponseField = '';
 
         if ($this->objOrders->getFieldData($orderId, self::YCRESPONSE) == '') {
@@ -269,8 +270,8 @@ class AsignYellowcubeCron
     {
         $oModel = $this->objProduct;
         if ($sTable == 'asign_yellowcube_orders') {
-            $oModel = $this->objOrders;    
-        }        
+            $oModel = $this->objOrders;
+        }
         $aParams = $oModel->getYellowcubeReport($itemid, $sTable, $sResponseField);
 
         return $aParams["StatusCode"];

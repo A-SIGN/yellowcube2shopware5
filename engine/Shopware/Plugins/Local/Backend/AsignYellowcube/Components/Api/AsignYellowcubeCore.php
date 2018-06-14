@@ -147,7 +147,7 @@ class AsignYellowcubeCore
      * @param array $oArticle Article data
      * @param string $sFlag Mode i.e. I,U,D
      *
-     * @return object
+     * @return array
      */
     public function insertArticleMasterData($aArticle, $sFlag)
     {
@@ -163,7 +163,6 @@ class AsignYellowcubeCore
             ));
         } catch (Exception $soapex) {
             $this->oLogs->saveLogsData('insertArticleMasterData', $soapex);
-            throw new Exception($soapex->getMessage());
             return (array(
                 'success' => false,
                 'message' => $soapex->getMessage(),
