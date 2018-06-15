@@ -6,7 +6,7 @@
  * @author    entwicklung@a-sign.ch
  * @copyright A-Sign
  * @license   https://www.a-sign.ch/
- * @version   2.1
+ * @version   2.1.2
  * @link      https://www.a-sign.ch/
  * @see       Shopware.apps.AsignYellowcube.view.sidebar.Inventory
  * @since     File available since Release 1.0
@@ -27,12 +27,13 @@ Ext.define('Shopware.apps.AsignYellowcube.view.sidebar.Orders', {
         textSave:               '{s namespace="backend/asign_yellowcube/main" name=yellowcube/details/orders/save}Save{/s}',
         textTitle:              '{s namespace="backend/asign_yellowcube/main" name=yellowcube/details/orders/title}Yellowcube Response{/s}',
         textNothingSelected:    '{s namespace="backend/asign_yellowcube/main" name=yellowcube/details/orders/nothing}No order selected{/s}',
-        textInitialWab:         '{s namespace="backend/asign_yellowcube/main" name=yellowcube/details/orders/initial}Initial WAB Response{/s}',        
+        textInitialWab:         '{s namespace="backend/asign_yellowcube/main" name=yellowcube/details/orders/initial}Initial Response (WAB){/s}',
         textStatus:             '{s namespace="backend/asign_yellowcube/main" name=yellowcube/details/orders/status}Get Order Status{/s}',
-        textManual:             '{s namespace="backend/asign_yellowcube/main" name=yellowcube/details/orders/mansend}Manually send Order{/s}',        
-        textCustomer:           '{s namespace="backend/asign_yellowcube/main" name=yellowcube/details/orders/customer}Yellowcube Customer Order Status (WAB){/s}',
-        textReply:              '{s namespace="backend/asign_yellowcube/main" name=yellowcube/details/orders/reply}Get Customer Order Reply{/s}',
-        textWarResponse:        '{s namespace="backend/asign_yellowcube/main" name=yellowcube/details/orders/response}Yellowcube WAR Response{/s}'
+        textManualTitle:        '{s namespace="backend/asign_yellowcube/main" name=yellowcube/details/orders/mantitle}No Data{/s}',
+        textManual:             '{s namespace="backend/asign_yellowcube/main" name=yellowcube/details/orders/mansend}Manually send Order{/s}',
+        textCustomer:           '{s namespace="backend/asign_yellowcube/main" name=yellowcube/details/orders/customer}Order Status (WAB){/s}',
+        textReply:              '{s namespace="backend/asign_yellowcube/main" name=yellowcube/details/orders/reply}Get Order Reply{/s}',
+        textWarResponse:        '{s namespace="backend/asign_yellowcube/main" name=yellowcube/details/orders/response}Order Reply (WAR){/s}'
     },
 
     /**
@@ -116,6 +117,7 @@ Ext.define('Shopware.apps.AsignYellowcube.view.sidebar.Orders', {
                 pack  : 'start'
             },
             items: [               
+                me.createManualFieldset(),
                 me.createInitialFieldset(),
                 me.createWabFieldset(),
                 me.createWarFieldset(),
@@ -159,7 +161,6 @@ Ext.define('Shopware.apps.AsignYellowcube.view.sidebar.Orders', {
             layout: 'anchor',
             items: [
                 me.createInitResponseText(),
-                me.createGetManualButton(),
                 me.createGetWabButton()
             ]
         });
@@ -181,6 +182,45 @@ Ext.define('Shopware.apps.AsignYellowcube.view.sidebar.Orders', {
         return me.respLabel;
     },
 
+    /**
+     * Creates an form fieldset for showing manual send button
+     *
+     * @return Ext.form.FieldSet
+     */
+    createManualFieldset: function() {
+        var me = this;
+
+        return Ext.create('Ext.form.FieldSet', {
+            id: 'fldMan',
+            flex: 1,
+            padding: 10,
+            collapsible: true,
+            title: me.snippets.textManualTitle,
+            autoScroll: true,
+            layout: 'anchor',
+            hidden: true,
+            items: [
+                me.createManText(),
+                me.createGetManualButton()
+            ]
+        });
+    },
+
+    /**
+     * Creates and returns WAB response text on the sidebar
+     * @return Ext.form.Label
+     */
+    createManText: function()  {
+        var me = this;
+
+        me.manLabel = Ext.create('Ext.form.Label', {
+            id: 'manlabel',
+            padding: '0 0 5 0'
+        });
+
+        return me.manLabel;
+    },
+
      /**
      * Creates and returns a button used to get status for the YC response
      * @return Ext.button.Button
@@ -192,7 +232,6 @@ Ext.define('Shopware.apps.AsignYellowcube.view.sidebar.Orders', {
             text: me.snippets.textManual,
             id: 'btnManual',
             cls: 'primary',
-            hidden: true,            
             handler: function () {
                 me.fireEvent('sendOrder');
             }
@@ -212,7 +251,7 @@ Ext.define('Shopware.apps.AsignYellowcube.view.sidebar.Orders', {
             text: me.snippets.textStatus,
             id: 'btnInit',
             cls: 'primary',
-            hidden: true,            
+            hidden: true,
             handler: function () {
                 me.fireEvent('getPreStatus');
             }

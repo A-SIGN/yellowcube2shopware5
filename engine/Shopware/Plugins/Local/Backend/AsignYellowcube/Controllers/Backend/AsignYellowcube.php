@@ -10,7 +10,7 @@
  * @author    entwicklung@a-sign.ch
  * @copyright asign
  * @license   https://www.a-sign.ch/
- * @version   2.1
+ * @version   2.1.2
  * @link      https://www.a-sign.ch/
  * @see       Shopware_Controllers_Backend_AsignYellowcube
  * @since     File available since Release 1.0
@@ -164,17 +164,17 @@ class Shopware_Controllers_Backend_AsignYellowcube extends Shopware_Controllers_
         $data = array();
         foreach ($result as $key => $order) {
             // frame serialized responses
-            $aData = unserialize($order["ycResponse"]);
-            $order['ycResponse'] = $this->getJsonEncodedData($aData);
+            $aResponse = unserialize($order["ycResponse"]);
+            $order['ycResponse'] = $this->getJsonEncodedData($aResponse);
 
             // get EORI data
             $order['eori'] = $this->getRepository('Orders')->getOrderEoriNumber($order['userID']);
 
             // WAB response
-            $wData = unserialize($order["ycWabResponse"]);
-            $order['iswabaccepted'] = ($wData['StatusType'] === 'S' && $wData['StatusCode'] === 10) ? 1 : 0;
-            $order['iswaraccepted'] = ($wData['StatusType'] === 'S' && $wData['StatusCode'] === 100) ? 1 : 0;
-            $order['ycWabResponse'] = $this->getJsonEncodedData($wData);
+            $aWabResponse = unserialize($order["ycWabResponse"]);
+            $order['iswabaccepted'] = (isset($aResponse['StatusType']) && $aResponse['StatusType'] === 'S' && $aResponse['StatusCode'] == 10) ? 1 : 0;
+            $order['iswaraccepted'] = (isset($aWabResponse['StatusType']) && $aWabResponse['StatusType'] === 'S' && $aWabResponse['StatusCode'] == 100) ? 1 : 0;
+            $order['ycWabResponse'] = $this->getJsonEncodedData($aWabResponse);
 
             //modified version of the WAR response, since it has items information
             $warResponse = unserialize($order["ycWarResponse"]);

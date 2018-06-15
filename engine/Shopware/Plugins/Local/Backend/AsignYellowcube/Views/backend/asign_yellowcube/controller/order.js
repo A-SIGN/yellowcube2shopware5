@@ -6,7 +6,7 @@
  * @author    entwicklung@a-sign.ch
  * @copyright A-Sign
  * @license   https://www.a-sign.ch/
- * @version   2.1
+ * @version   2.1.2
  * @link      https://www.a-sign.ch/
  * @see       Shopware.apps.AsignYellowcube.controller.Order
  * @since     File available since Release 1.0
@@ -86,48 +86,66 @@ Ext.define('Shopware.apps.AsignYellowcube.controller.Order', {
      * @param record
      */
     onSelectionChange: function(sm, selections) {
-
         if (selections[0]) {
             var me = this,
                 record = selections[0],
                 warcount = record.get('ycWarCount'),
-                finalInit = null, finalWab = null, finalWar = null,
+                finalMan = null,
+                finalInit = null,
+                finalWab = null,
+                finalWar = null,
                 orderId = record.get('ordid');
 
-            // frame the response for initial, wab and war
-            if ( record.get('ycReference') == 0 ) {
-                Ext.getCmp('btnManual').show();
-                Ext.getCmp('btnInit').hide();
-                Ext.getCmp('fldWab').hide();
-                Ext.getCmp('fldWar').hide();
-                Ext.getCmp('resplabel').setText(me.snippets.messageManual, false);
-            } else {
-                finalInit = me.frameInitialResponse(record.get('ycResponse'), record.get('iswabaccepted'));
-            }
-
+            finalMan = me.frameManualResponse(record.get('ycResponse'), record.get('iswabaccepted'));
+            finalInit = me.frameInitialResponse(record.get('ycResponse'), record.get('iswabaccepted'), record.get('iswaraccepted'));
             finalWab = me.frameWabResponse(record.get('ycWabResponse'), record.get('iswaraccepted'));
-
-            if (warcount !== 0) {
-                finalWar  = me.frameWarResponse(record.get('ycWarResponse'));
-            }
+            finalWar  = me.frameWarResponse(record.get('ycWarResponse'), warcount);
 
             // imprint them on sidebar panel
-            me.displaySidebarFields(finalInit, finalWab, finalWar, orderId);
+            me.displaySidebarFields(finalMan, finalInit, finalWab, finalWar, orderId);
         }
+    },
+
+    /**
+    * frames and returns manual response as string with html
+    * @param [object] ycresponse object
+    * @param [integer] iswabaccepted integer
+    * @return string
+    */
+    frameManualResponse: function(ycresponse, iswabaccepted) {
+        var response = Ext.JSON.decode(ycresponse),
+            manualtext = null,
+            me = this;
+
+        // if the response is empty
+        if (response == null || !iswabaccepted)  {
+            manualtext = '<table width=100%>';
+            manualtext += '<tr><td>' + me.snippets.messageManual + '</td></tr>';
+            manualtext += '</table><br />';
+        }
+
+        return manualtext;
     },
 
     /**
     * frames and returns initial response as string with html and response data
     * @param [object] ycresponse object
     * @param [integer] iswabaccepted integer
+    * @param [integer] iswaraccepted integer
     * @return string
     */
-    frameInitialResponse: function(ycresponse, iswabaccepted) {
-        var response = Ext.JSON.decode(ycresponse);
+    frameInitialResponse: function(ycresponse, iswabaccepted, iswaraccepted) {
+        var response = Ext.JSON.decode(ycresponse),
+            finaltext = null;
+
+        Ext.getCmp('btnInit').hide();
+        Ext.getCmp('btnInit').setDisabled(false);
 
         // if the response in !empty?
-        if (response != null)  {
+        if (response !== null)  {
             var finaltext = '<table width=100%>';
+
+            Ext.getCmp('btnInit').show();
 
             Ext.Object.each(response, function(key, value, allset) {
                 if (key === 'EventTimestamp') {
@@ -140,11 +158,12 @@ Ext.define('Shopware.apps.AsignYellowcube.controller.Order', {
                 }
                 finaltext += '<tr><td ' + errstyle + '><b>' + key + ':</b></td><td ' + errstyle + '>' + value + '</td></tr>';
             });
+
             finaltext += '</table><br />';
 
             // if the response is true?
-            if (iswabaccepted == 1) {
-                Ext.getCmp('btnInit').setDisabled(false);
+            if (iswabaccepted && iswaraccepted) {
+                Ext.getCmp('btnInit').setDisabled(true);
             }
         }
 
@@ -160,6 +179,8 @@ Ext.define('Shopware.apps.AsignYellowcube.controller.Order', {
     frameWabResponse: function(ycwabresponse, iswaraccepted) {
         var wabResponse = Ext.JSON.decode(ycwabresponse);
 
+        Ext.getCmp('btnWar').setDisabled(true);
+
         // if the WAB Response in !empty?
         if (wabResponse != null)  {
             var finalWab = '<table width=100%>';
@@ -172,17 +193,15 @@ Ext.define('Shopware.apps.AsignYellowcube.controller.Order', {
                 // if its an E?
                 if (key === 'StatusType' && value === 'E') {
                     var errstyle = 'style="color: #F00;"';
-                } else {
-                    Ext.getCmp('btnManual').hide();
                 }
 
                 finalWab += '<tr><td ' + errstyle + '><b>' + key + ':</b></td><td ' + errstyle + '>' + value + '</td></tr>';
             });
+
             finalWab += '</table><br />';
 
             // if the response is true?
             if (iswaraccepted == 1) {
-                Ext.getCmp('btnInit').setDisabled(true);
                 Ext.getCmp('btnWar').setDisabled(false);
             } else {
                 // because the status is E not S. So asking for WAR response is pointlesss
@@ -199,14 +218,16 @@ Ext.define('Shopware.apps.AsignYellowcube.controller.Order', {
     /**
     * Frames and returns WAR response as string with html and response data
     * @param [object] record object
+    * @param [integer] warcount integer
     * @return string
     */
-    frameWarResponse: function(ycwarresponse) {
+    frameWarResponse: function(ycwarresponse, warcount) {
         var warResponse = Ext.JSON.decode(ycwarresponse),
-        	finalWar = '', sResponse = '';
+        	finalWar = null,
+            sResponse = '';
 
         // if the WAR Response in !empty?
-        if (warResponse !== Ext.undefined)  {
+        if (warcount != 0 && warResponse !== Ext.undefined)  {
         	Ext.Object.each(warResponse, function(key, child, allset) {
                 sResponse += '<table width=100% border=0>';
                 sResponse += '<tr><td colspan=2><b><u>' + key + '</u></b></td></tr>';
@@ -233,8 +254,6 @@ Ext.define('Shopware.apps.AsignYellowcube.controller.Order', {
                 sResponse += '</table><hr />';
             });
             finalWar += sResponse;
-        } else {
-            finalWar = null;
         }
 
         return finalWar;
@@ -242,25 +261,35 @@ Ext.define('Shopware.apps.AsignYellowcube.controller.Order', {
 
     /**
     * Prints the framed response on Sidebar panel
-    * @param [string] finaltext
+    * @param [string] finalMan
+    * @param [string] finalInit
     * @param [string] finalWab
     * @param [string] finalWar
     * @param [string] orderId
     * @return void
     */
-    displaySidebarFields: function(finaltext, finalWab, finalWar, orderId) {
+    displaySidebarFields: function(finalMan, finalInit, finalWab, finalWar, orderId) {
         Ext.getCmp('textoId').setValue(orderId);
 
+        // print manual WAB
+        if (finalMan != null) {
+            Ext.getCmp('fldMan').show();
+            Ext.getCmp('manlabel').setText(finalMan, false);
+        } else {
+            Ext.getCmp('fldMan').hide();
+        }
+
         // print initial response
-        if (finaltext != null) {
-            //Ext.getCmp('btnManual').hide(); // hide manual button
-            Ext.getCmp('btnInit').show();
-            Ext.getCmp('resplabel').setText(finaltext, false);
+        if (finalInit != null) {
+            Ext.getCmp('fldInit').show();
+            Ext.getCmp('resplabel').setText(finalInit, false);
+
+        } else {
+            Ext.getCmp('fldInit').hide();
         }
 
         // print WAB response
         if (finalWab != null) {
-            //Ext.getCmp('btnManual').hide(); // hide manual button
             Ext.getCmp('fldWab').show();
             Ext.getCmp('wablabel').setText(finalWab, false);
         } else {
@@ -269,8 +298,6 @@ Ext.define('Shopware.apps.AsignYellowcube.controller.Order', {
 
         // print WAR response
         if (finalWar != null) {
-            Ext.getCmp('btnManual').hide(); // hide manual button
-            Ext.getCmp('btnInit').hide();
             Ext.getCmp('fldWar').show();
             Ext.getCmp('warlabel').setText(finalWar, false);
         } else {
@@ -408,7 +435,7 @@ Ext.define('Shopware.apps.AsignYellowcube.controller.Order', {
 
                     // frame and set the response (temp)
                     resultString = me.frameInitialResponse(response.dataresult, statusCode);
-                    me.displaySidebarFields(resultString, null, null, rowid); // show/hide fields
+                    me.displaySidebarFields(null, resultString, null, null, rowid); // show/hide fields
 
                     // enable the button if the status == 10
                     if (response.statcode != 100) {
@@ -514,7 +541,7 @@ Ext.define('Shopware.apps.AsignYellowcube.controller.Order', {
                             statusCode = 1;
                         }
                         resultString = me.frameWabResponse(response.dataresult, statusCode);
-                        me.displaySidebarFields(null, resultString, null, rowid); // show/hide fields
+                        me.displaySidebarFields(null, null, resultString, null, rowid); // show/hide fields
                     } else if(optval == 'WAR') {
                         message = me.snippets.messageWar;
                         Ext.getCmp('btnWar').setDisabled(true); // hide the WAR button
@@ -524,7 +551,7 @@ Ext.define('Shopware.apps.AsignYellowcube.controller.Order', {
                             statusCode = 1;
                         }
                         resultString = me.frameWarResponse(response.dataresult);
-                        me.displaySidebarFields(null, null, resultString, rowid); // show/hide fields
+                        me.displaySidebarFields(null, null, null, resultString, rowid); // show/hide fields
                     }
 
                     Ext.Msg.show({
