@@ -3,14 +3,12 @@
 /**
  * This file handles Yellowcube related functions
  *
- * PHP version 5
- *
  * @category  asign
  * @package   AsignYellowcube
  * @author    entwicklung@a-sign.ch
  * @copyright asign
  * @license   https://www.a-sign.ch/
- * @version   2.1
+ * @version   2.1.3
  * @link      https://www.a-sign.ch/
  * @see       AsignYellowcubeCore
  * @since     File available since Release 1.0
@@ -19,6 +17,7 @@
 namespace Shopware\AsignYellowcube\Components\Api;
 
 use Shopware\AsignYellowcube\Helpers\ApiClasses\AsignSoapClientApi;
+use Shopware\CustomModels\AsignModels\Orders\Validator;
 
 /**
  * Handles Yellowcube related functions
@@ -369,6 +368,9 @@ class AsignYellowcubeCore
             return $oRequestData;
         } else {
             try {
+                $oValidator = new Validator();
+                $oValidator->validate($oRequestData);
+
                 $aResponse = $this->oSoapApi->callFunction("CreateYCCustomerOrder", $oRequestData);
                 return (array(
                     'success' => true,
