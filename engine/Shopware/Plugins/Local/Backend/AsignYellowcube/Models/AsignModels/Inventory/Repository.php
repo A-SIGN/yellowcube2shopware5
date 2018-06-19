@@ -2,19 +2,18 @@
 /**
  * This file defines data repository for Inventory
  *
- * PHP version 5
- *
  * @category  asign
  * @package   AsignYellowcube
  * @author    entwicklung@a-sign.ch
  * @copyright A-Sign
  * @license   https://www.a-sign.ch/
- * @version   2.1
+ * @version   2.1.3
  * @link      https://www.a-sign.ch/
  * @since     File available since Release 1.0
  */
 
 namespace Shopware\CustomModels\AsignModels\Inventory;
+
 use Shopware\Components\Model\ModelRepository;
 
 /**
@@ -77,11 +76,11 @@ class Repository extends ModelRepository
     /**
      * Stores inventory information received from Yellowcube
      *
-     * @param array $aResponseData Array of response
+     * @param object $oResponseData Object of response
      *
-     * @return integer
+     * @return integer Updated articles
      */
-    public function saveInventoryData($aResponseData)
+    public function saveInventoryData($oResponseData)
     {
         // format the response data
         $iCount = 0;
@@ -89,40 +88,41 @@ class Repository extends ModelRepository
         // reset the inventory data
         $this->resetInventoryData();
 
-        foreach ($aResponseData->ArticleList->Article as $article) {
-            $qtyISO  = $article->QuantityUOM->QuantityISO;
-            $qtyUOM  = $article->QuantityUOM->_;
-            $ycartnr = $article->YCArticleNo;
-            $artnr   = $article->ArticleNo;
-            $artdesc = $article->ArticleDescription;
+        foreach ($oResponseData->ArticleList->Article as $oArticle) {
+            $qtyISO  = $oArticle->QuantityUOM->QuantityISO;
+            $qtyUOM  = $oArticle->QuantityUOM->_;
+            $ycartnr = $oArticle->YCArticleNo;
+            $artnr   = $oArticle->ArticleNo;
+            $artdesc = $oArticle->ArticleDescription;
 
             // entry id to avoid duplicates
             $mainId = substr($ycartnr, 4);
 
             // frame the additioanal information array
             $aAddInfo = array(
-                'EAN'               => $article->EAN,
-                'Plant'             => $article->Plant,
-                'StorageLocation'   => $article->StorageLocation,
-                'StockType'         => $article->StockType,
+                'EAN'               => $oArticle->EAN,
+                'Plant'             => $oArticle->Plant,
+                'StorageLocation'   => $oArticle->StorageLocation,
+                'StockType'         => $oArticle->StockType,
                 'QuantityISO'       => $qtyISO,
                 'QuantityUOM'       => $qtyUOM,
-                'YCLot'             => $article->YCLot,
-                'Lot'               => $article->Lot,
-                'BestBeforeDate'    => $article->BestBeforeDate,
+                'YCLot'             => $oArticle->YCLot,
+                'Lot'               => $oArticle->Lot,
+                'BestBeforeDate'    => $oArticle->BestBeforeDate,
             );
             // serialize the data
             $sAdditional = serialize($aAddInfo);
 
             // push in db
-            $query = "INSERT INTO `asign_yellowcube_inventory` SET `id` = '" . $mainId . "', `ycarticlenr` = '".$ycartnr."', `articlenr` = '".$artnr."', `artdesc` = '" . $artdesc . "', `additional` = '" . $sAdditional . "' ON DUPLICATE KEY UPDATE `createdon` = NOW()";
-            Shopware()->Db()->query($query);
+            $sUpdateYCInventory = "INSERT INTO `asign_yellowcube_inventory` SET `id` = '" . $mainId . "', `ycarticlenr` = '".$ycartnr."', `articlenr` = '".$artnr."', `artdesc` = '" . $artdesc . "', `additional` = '" . $sAdditional . "' ON DUPLICATE KEY UPDATE `createdon` = NOW()";
+            Shopware()->Db()->query($sUpdateYCInventory);
 
             //update the stock
             $iStock = (int) $qtyUOM;
-            Shopware()->Db()->query("UPDATE `s_articles_details` SET `instock` = '" . $iStock . "' WHERE `ordernumber` = '" . $artnr . "'");
+            $sUpdateArtInventory = "UPDATE `s_articles_details` SET `instock` = '" . $iStock . "' WHERE `ordernumber` = '" . $artnr . "'";
+            Shopware()->Db()->query($sUpdateArtInventory);
 
-            $iCount = $iCount + 1;
+            $iCount++;
         }
 
         return $iCount;

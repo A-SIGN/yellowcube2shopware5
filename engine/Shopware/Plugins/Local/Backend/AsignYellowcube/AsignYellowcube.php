@@ -1,16 +1,13 @@
 <?php
-
 /**
  * This file defines the Backend controller
- *
- * PHP version 5
  *
  * @category  asign
  * @package   AsignYellowcube
  * @author    entwicklung@a-sign.ch
  * @copyright asign
  * @license   https://www.a-sign.ch/
- * @version   2.1
+ * @version   2.1.3
  * @link      https://www.a-sign.ch/
  * @see       Shopware_Controllers_Backend_AsignYellowcube
  * @since     File available since Release 1.0
@@ -349,19 +346,20 @@ class Shopware_Controllers_Backend_AsignYellowcube extends Shopware_Controllers_
                 $oYCube = new AsignYellowcubeCore();
                 if ($mode === "S") {
                     $aResponse = $oYCube->getYCGeneralDataStatus($artid, "ART");
+                    $oResponse = $aResponse['data'];
                 } else {
                     $aResponse = $oYCube->insertArticleMasterData($aArticles, $mode);
                     $blStatus = $aResponse['success'];
-                    $aResponse = $aResponse['data'];
+                    $oResponse = $aResponse['data'];
                 }
 
                 $iStatusCode = $aResponse['StatusCode'];
 
                 // get the serialized response
-                $sTmpResult = $this->getSerializedResponse($aResponse); // to override the content
+                $sTmpResult = $this->getSerializedResponse($oResponse); // to override the content
 
                 // log it event if its success / failure
-                $oModel->saveArticleResponseData($aResponse, $artid);
+                $oModel->saveArticleResponseData($oResponse, $artid);
 
                 // save in database
                 if ($blStatus || $iStatusCode === 100) {
@@ -412,41 +410,41 @@ class Shopware_Controllers_Backend_AsignYellowcube extends Shopware_Controllers_
             $oYCube = new AsignYellowcubeCore();
             if ($mode) {
                 $aResponse = $oYCube->getYCGeneralDataStatus($ordid, $mode);
-                $clrResponse = $aResponse;
             } else {
                 $aResponse = $oYCube->createYCCustomerOrder($aOrders);
-                $clrResponse = $aResponse['data'];
             }
 
-            $sStatusMsg = $aResponse['success'];
-            $sStatusType = $aResponse['StatusType'];
-            $sStatusCode = $aResponse['StatusCode'];
+            $blStatus = $aResponse['success'];
+            $oResponse = $aResponse['data'];
+
+            $sStatusType = $oResponse->StatusType;
+            $iStatusCode = $oResponse->StatusCode;
 
             // check if any zip code error is linked?
-            if ($aResponse['zcode']) {
+            if ($oResponse->zcode) {
                 $this->View()->assign(
                     array(
                         'success' => false,
-                        'code'    => $aResponse['zcode'],
+                        'code'    => $oResponse->zcode,
                         'message' => $aResponse['message'],
                     )
                 );
             } else {
                 // get the serialized response
-                $sTmpResult = $this->getSerializedResponse($clrResponse); // to override the content
+                $sTmpResult = $this->getSerializedResponse($oResponse); // to override the content
 
                 // log the response whether S or E
                 $oModel->saveOrderResponseData($aResponse, $ordid, $mode);
 
                 // save in database
-                if ($sStatusMsg || $sStatusType === 'S' || $sStatusCode === 100) {
+                if ($blStatus || $sStatusType === 'S' || $iStatusCode === 100) {
                     $this->View()->assign(
                         array(
                             'success'    => true,
                             'dcount'     => 1,
                             'mode'       => $mode,
                             'dataresult' => $sTmpResult,
-                            'statcode'   => $sStatusCode,
+                            'statcode'   => $iStatusCode,
                         )
                     );
                 } else {
@@ -714,13 +712,13 @@ class Shopware_Controllers_Backend_AsignYellowcube extends Shopware_Controllers_
     /**
      * Filter and send serialized data
      *
-     * @param array $aResponse - Array of Response data
+     * @param object $oResponse - Object of response data
      *
      * @return string
      */
-    protected function getSerializedResponse($aResponse)
+    protected function getSerializedResponse($oResponse)
     {
-        $aResponse = (array)$aResponse;
+        $aResponse = json_decode(json_encode($oResponse));
         $aResponse = array_reverse($aResponse);// reverse the array
 
         return json_encode($aResponse);

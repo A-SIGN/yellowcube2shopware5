@@ -1,16 +1,13 @@
 <?php
-
 /**
  * This file defines the Backend controller
- *
- * PHP version 5
  *
  * @category  asign
  * @package   AsignYellowcube
  * @author    entwicklung@a-sign.ch
  * @copyright asign
  * @license   https://www.a-sign.ch/
- * @version   2.1.2
+ * @version   2.1.3
  * @link      https://www.a-sign.ch/
  * @see       Shopware_Controllers_Backend_AsignYellowcube
  * @since     File available since Release 1.0
@@ -18,7 +15,6 @@
 
 use Shopware\AsignYellowcube\Components\Api\AsignYellowcubeCore;
 use Shopware\AsignYellowcube\Components\Api\AsignYellowcubeCron;
-use Shopware\AsignYellowcube\Helpers\ApiClasses\AsignSoapClientApi;
 
 /**
  * Defines backend controller
@@ -346,26 +342,29 @@ class Shopware_Controllers_Backend_AsignYellowcube extends Shopware_Controllers_
 
         try {
             if ($blAllowEsd) {
-                $blStatus = false;
                 $oYCube = new AsignYellowcubeCore();
 
                 if ($sMode === "S") {
                     $aResponse = $oYCube->getYCGeneralDataStatus($iArtId, "ART");
                 } else {
                     $aResponse = $oYCube->insertArticleMasterData($aArticles, $sMode);
-                    $blStatus = true;
-                    $aResponse = $aResponse['data'];
                 }
 
-                $iStatusCode = $aResponse['StatusCode'];
+                $iStatusCode = -1;
+                $blSuccess = $aResponse['success'];
 
-                // log it event if its success / failure
-                $oProductRepository->saveArticleResponseData($aResponse, $iArtId);
+                if ($blSuccess) {
+                    $oResponse = $aResponse['data'];
+                    $iStatusCode = $oResponse->StatusCode;
+                }
 
                 // save in database
-                if ($blStatus || $iStatusCode === 100) {
+                if ($blSuccess || $iStatusCode === 100) {
+                    // log it event if its success / failure
+                    $oProductRepository->saveArticleResponseData($oResponse, $iArtId);
+
                     // get the serialized response
-                    $sTmpResult = $this->getSerializedResponse($aResponse); // to override the content
+                    $sTmpResult = $this->getSerializedResponse($oResponse); // to override the content
 
                     $this->View()->assign(
                         array(
@@ -413,43 +412,43 @@ class Shopware_Controllers_Backend_AsignYellowcube extends Shopware_Controllers_
             $oYCube = new AsignYellowcubeCore();
 
             if ($sMode) {
-                $aResponse = (array)$oYCube->getYCGeneralDataStatus($iOrderId, $sMode);
-                $clrResponse = $aResponse;
+                $aResponse = $oYCube->getYCGeneralDataStatus($iOrderId, $sMode);
             } else {
                 $aOrders = $oOrderRepository->getOrderDetails($iOrderId);
                 $aResponse = $oYCube->createYCCustomerOrder($aOrders);
-                $clrResponse = $aResponse['data'];
             }
 
+            $oResponse = $aResponse['data'];
+
             // check if any zip code error is linked?
-            if ($aResponse['zcode']) {
+            if ($oResponse->zcode) {
                 $this->View()->assign(
                     array(
                         'success' => false,
-                        'code'    => $aResponse['zcode'],
+                        'code'    => $oResponse->zcode,
                         'message' => $aResponse['message'],
                     )
                 );
             } else {
                 // get the serialized response
-                $sTmpResult = $this->getSerializedResponse($clrResponse); // to override the content
+                $sTmpResult = $this->getSerializedResponse($oResponse); // to override the content
 
                 // log the response whether S or E
                 $oOrderRepository->saveOrderResponseData($aResponse, $iOrderId, $sMode);
 
-                $sStatusMsg = $aResponse['success'];
-                $sStatusType = $aResponse['StatusType'];
-                $sStatusCode = $aResponse['StatusCode'];
+                $blStatusMsg = $aResponse['success'];
+                $sStatusType = $oResponse->StatusType;
+                $iStatusCode = $oResponse->StatusCode;
 
                 // save in database
-                if ($sStatusMsg || $sStatusType === 'S' || $sStatusCode === 100) {
+                if ($blStatusMsg || $sStatusType === 'S' || $iStatusCode === 100) {
                     $this->View()->assign(
                         array(
                             'success'    => true,
                             'dcount'     => 1,
                             'mode'       => $sMode,
                             'dataresult' => $sTmpResult,
-                            'statcode'   => $sStatusCode,
+                            'statcode'   => $iStatusCode,
                         )
                     );
                 } else {

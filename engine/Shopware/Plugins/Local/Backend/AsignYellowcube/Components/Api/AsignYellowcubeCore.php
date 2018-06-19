@@ -126,10 +126,10 @@ class AsignYellowcubeCore
 
         // try importing inventory data...
         try {
-            $aResponse = $this->oSoapApi->callFunction("GetInventory", $oObject);
+            $oResponse = $this->oSoapApi->callFunction("GetInventory", $oObject);
             return (array(
                 'success' => true,
-                'data'    => $aResponse,
+                'data'    => $oResponse,
             ));
         } catch (Exception $soapex) {
             $this->oLogs->saveLogsData('getInventory', $soapex);
@@ -154,17 +154,16 @@ class AsignYellowcubeCore
         $oRequestData = $this->getYCFormattedArticleData($aArticle, $sFlag);
 
         try {
-            $aResponse = $this->oSoapApi->callFunction("InsertArticleMasterData", $oRequestData);
-
+            $oResponse = $this->oSoapApi->callFunction("InsertArticleMasterData", $oRequestData);
             return (array(
                 'success' => true,
-                'data'    => $aResponse,
+                'data'    => $oResponse,
             ));
-        } catch (Exception $soapex) {
-            $this->oLogs->saveLogsData('insertArticleMasterData', $soapex);
+        } catch (Exception $oEx) {
+            $this->oLogs->saveLogsData('insertArticleMasterData', $oEx);
             return (array(
                 'success' => false,
-                'message' => $soapex->getMessage(),
+                'message' => $oEx->getMessage(),
             ));
         }
     }
@@ -205,12 +204,16 @@ class AsignYellowcubeCore
 
         // ping and get response...
         try {
-            return $this->oSoapApi->callFunction($aFunc[$sType], $oObject);
-        } catch (Exception $soapex) {
-            $this->oLogs->saveLogsData('getYCGeneralDataStatus', $soapex);
+            $oResponse = $this->oSoapApi->callFunction($aFunc[$sType], $oObject);
             return (array(
                 'success' => false,
-                'message' => $soapex->getMessage(),
+                'data'    => $oResponse,
+            ));
+        } catch (Exception $oEx) {
+            $this->oLogs->saveLogsData('getYCGeneralDataStatus', $oEx);
+            return (array(
+                'success' => false,
+                'message' => $oEx->getMessage(),
             ));
         }
     }
@@ -371,16 +374,16 @@ class AsignYellowcubeCore
                 $oValidator = new Validator();
                 $oValidator->validate($oRequestData);
 
-                $aResponse = $this->oSoapApi->callFunction("CreateYCCustomerOrder", $oRequestData);
+                $oResponse = $this->oSoapApi->callFunction("CreateYCCustomerOrder", $oRequestData);
                 return (array(
                     'success' => true,
-                    'data'    => $aResponse,
+                    'data'    => $oResponse,
                 ));
-            } catch (Exception $soapex) {
-                $this->oLogs->saveLogsData('createYCCustomerOrder', $soapex);
+            } catch (Exception $oEx) {
+                $this->oLogs->saveLogsData('createYCCustomerOrder', $oEx);
                 return (array(
                     'success' => false,
-                    'message' => $soapex->getMessage(),
+                    'message' => $oEx->getMessage(),
                 ));
             }
         }

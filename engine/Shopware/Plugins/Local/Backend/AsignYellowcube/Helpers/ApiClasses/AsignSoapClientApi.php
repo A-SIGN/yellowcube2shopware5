@@ -2,20 +2,19 @@
 /**
  * This file handles SOAP requests
  *
- * PHP version 5
- *
  * @category  asign
  * @package   AsignYellowcube
  * @author    entwicklung@a-sign.ch
  * @copyright A-Sign
  * @license   https://www.a-sign.ch/
- * @version   2.1
+ * @version   2.1.3
  * @link      https://www.a-sign.ch/
  * @see       AsignSoapClientApi
  * @since     File available since Release 1.0
  */
 
 namespace Shopware\AsignYellowcube\Helpers\ApiClasses;
+
 use Shopware\AsignYellowcube\Helpers\ApiClasses\Utils\AsignSoapclient;
 
 /**
@@ -371,7 +370,7 @@ class AsignSoapClientApi
      * @param string $sFnc Function to be called
      * @param object $oParams object of params to be passed
      *
-     * @return array
+     * @return object
      */
     public function callFunction($sFnc, $oParams = null)
     {
@@ -392,7 +391,7 @@ class AsignSoapClientApi
             }
             // END-DEBUG
 
-            return get_object_vars($oResponse);
+            return $oResponse;
         } catch(\Exception $sEx) {
             $oLogs = Shopware()->Models()->getRepository("Shopware\CustomModels\AsignModels\Errorlogs\Errorlogs");
             $oLogs->saveLogsData('SOAP_CALL', $sEx);

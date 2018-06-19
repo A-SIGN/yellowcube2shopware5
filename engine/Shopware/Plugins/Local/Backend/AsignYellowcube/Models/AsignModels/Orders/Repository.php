@@ -2,14 +2,12 @@
 /**
  * This file defines data repository for Orders
  *
- * PHP version 5
- *
  * @category  asign
  * @package   AsignYellowcube
  * @author    entwicklung@a-sign.ch
  * @copyright A-Sign
  * @license   https://www.a-sign.ch/
- * @version   2.1
+ * @version   2.1.3
  * @link      https://www.a-sign.ch/
  * @since     File available since Release 1.0
  */
@@ -173,13 +171,13 @@ class Repository extends ModelRepository
     /**
      * Returns order data based on ordid
      *
-     * @param integer $ordid order item id
-     * @param boolean $isDirect if direct from CO
-     * @param bool $artid if its a CRON
+     * @param integer $iOrdereId order item id
+     * @param bool $blDirect if direct from CO
+     * @param bool $blCron if its a CRON
      *
      * @return array
      */
-    public function getOrderDetails($ordid, $isDirect = false, $isCron = false)
+    public function getOrderDetails($iOrdereId, $blDirect = false, $blCron = false)
     {
         // get order details based on query
         $sSql = "SELECT so.id as ordid, so.ordernumber as ordernumber, so.ordertime as ordertime, so.paymentID as paymentid, so.dispatchID as dispatchid, sob.salutation as sal, sob.company, sob.department, CONCAT(sob.firstname, ' ', sob.lastname) as fullname, sob.street as streetinfo, sob.zipcode as zip, sob.city as city, scc.countryiso as country, su.email as email, spd.comment as shipping, scl.locale as language";
@@ -191,19 +189,19 @@ class Repository extends ModelRepository
         $sSql .= " JOIN s_core_locales scl ON so.language = scl.id";
 
         // cron?
-        if ($isCron) {
+        if ($blCron) {
             $sSql .= " JOIN asign_yellowcube_orders aso ON so.id = aso.ordid";
         }
 
         // if directly from Thank you page
-        if ($isDirect) {
-            $sSql .= " WHERE so.ordernumber = '" . $ordid . "'";
+        if ($blDirect) {
+            $sSql .= " WHERE so.ordernumber = '" . $iOrdereId . "'";
         } else {
-            $sSql .= " WHERE so.id = '" . $ordid . "'";
+            $sSql .= " WHERE so.id = '" . $iOrdereId . "'";
         }
 
         // cron?
-        if ($isCron) {
+        if ($blCron) {
             $sSql .= " AND aso.ycReference = 0";
         }
 
@@ -221,17 +219,17 @@ class Repository extends ModelRepository
      * received from Yellowcube. Modes included:
      * WAB, WAR, DC = Direct Call
      *
-     * @param array $aResponseData Array of response
+     * @param array $aResponse Array of response
      * @param string $ordid Order id
      * @param string $mode Mode of transfer
      *
      * @return null
      */
-    public function saveOrderResponseData($aResponseData, $ordid, $mode = null)
+    public function saveOrderResponseData($aResponse, $ordid, $mode = null)
     {
         // based on mode switch the response
         try {
-            if (isset($aResponseData['success']) && !$aResponseData['success']) {
+            if (isset($aResponse['success']) && !$aResponse['success']) {
                 $orderResource = \Shopware\Components\Api\Manager::getResource('Order');
                 $orderResource->update($ordid, array(
                     'orderStatusId' => Status::ORDER_STATE_CLARIFICATION_REQUIRED,
@@ -239,13 +237,13 @@ class Repository extends ModelRepository
                 return;
             }
 
+            $oResponse = $aResponse['data'];
+
             if ($mode !== null) {
                 // if direct then?
                 if ($mode === 'DC') {
-                    $clrResponse = $aResponseData['data'];
                     $sColumn = 'ycResponse';
                 } else {
-                    $clrResponse = $aResponseData;
                     if ($mode === 'WAB') {
                         $sColumn = 'ycWabResponse';
                     } elseif ($mode === 'WAR') {
@@ -253,25 +251,22 @@ class Repository extends ModelRepository
                     }
                 }
             } else {
-                $clrResponse = $aResponseData['data'];
                 $sColumn = 'ycResponse';
             }
 
-            // format as object2array
-            $clrResponse = (array)$clrResponse;
-            if (count($clrResponse) > 0) {
+            if (count($oResponse) > 0) {
                 // if response is not "E" then?
-                if ($clrResponse['StatusType'] !== 'E' && isset($clrResponse['Reference'])) {
-                    $sReference = ", `ycReference` = '" . $clrResponse['Reference'] . "'";
+                if ($oResponse->StatusType !== 'E' && isset($oResponse->Reference)) {
+                    $sReference = ", `ycReference` = '" . $oResponse->Reference . "'";
 
-                    $orderResource = \Shopware\Components\Api\Manager::getResource('Order');
-                    $orderResource->update($ordid, array(
+                    $oOrderResource = \Shopware\Components\Api\Manager::getResource('Order');
+                    $oOrderResource->update($ordid, array(
                         'orderStatusId' => Status::ORDER_STATE_IN_PROCESS,
                     ));
                 }
 
                 // push in db..
-                $sData = serialize($clrResponse);
+                $sData = serialize($oResponse);
                 $sWhere = " where `ordid` = '" . $ordid . "'";
 
                 // update reference number, but first check if alreay entry?
@@ -287,7 +282,7 @@ class Repository extends ModelRepository
 
                 // update tracking code in s_order table
                 if ($mode === 'WAR') {
-                    $sTrackingCode = $aResponseData[WAR][0]->GoodsIssue->CustomerOrderHeader->PostalShipmentNo;
+                    $sTrackingCode = $oResponse->WAR->GoodsIssue->CustomerOrderHeader->PostalShipmentNo;
 
                     $orderResource = \Shopware\Components\Api\Manager::getResource('Order');
                     $orderResource->update($ordid, array(

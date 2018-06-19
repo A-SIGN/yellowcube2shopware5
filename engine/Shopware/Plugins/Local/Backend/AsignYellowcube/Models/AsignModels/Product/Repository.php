@@ -2,54 +2,53 @@
 /**
  * This file defines data repository for Products
  *
- * PHP version 5
- *
  * @category  asign
  * @package   AsignYellowcube
  * @author    entwicklung@a-sign.ch
  * @copyright A-Sign
  * @license   https://www.a-sign.ch/
- * @version   2.1
+ * @version   2.1.3
  * @link      https://www.a-sign.ch/
  * @since     File available since Release 1.0
  */
 
 namespace Shopware\CustomModels\AsignModels\Product;
+
 use Shopware\Components\Model\ModelRepository;
 
 /**
-* Defines repository for Products
-*
-* @category A-Sign
-* @package  AsignYellowcube
-* @author   entwicklung@a-sign.ch
-* @link     http://www.a-sign.ch
-*/
+ * Defines repository for Products
+ *
+ * @category A-Sign
+ * @package  AsignYellowcube
+ * @author   entwicklung@a-sign.ch
+ * @link     http://www.a-sign.ch
+ */
 class Repository extends ModelRepository
 {
     /**
-    * @var define constants
-    */
+     * @var define constants
+     */
     const ALT_DENO_VAL = 1;
     const ALT_NUM_VAL = 1;
 
     /**
      * Returns all the products based on filter or sort.
      *
-     * @param array   $filters Filters
-     * @param integer $sort    Sort value
-     * @param integer $offset  Offset value
-     * @param integer $limit   Limit value
+     * @param array $filters Filters
+     * @param integer $sort Sort value
+     * @param integer $offset Offset value
+     * @param integer $limit Limit value
      *
      * @return array
      */
     public function getProductsListQuery($filters, $sort, $offset = 0, $limit = 100)
     {
         $select = Shopware()->Db()->select()
-                ->from('s_articles', array('artid' => 'id', 'name', 'active', 'tara', 'tariff', 'origin'))
-                ->joinLeft('s_articles_details', 's_articles.id = s_articles_details.articleID', array('ordernumber','instock','active'))
-                ->joinLeft('s_articles_esd', 's_articles.id = s_articles_esd.articleID', array('esdid' => 'id'))
-                ->joinLeft('asign_yellowcube_product', 'asign_yellowcube_product.artid = s_articles_details.articleID', array('id','lastSent','ycSpsDetails','ycResponse','ycReference','createDate'));
+            ->from('s_articles', array('artid' => 'id', 'name', 'active', 'tara', 'tariff', 'origin'))
+            ->joinLeft('s_articles_details', 's_articles.id = s_articles_details.articleID', array('ordernumber', 'instock', 'active'))
+            ->joinLeft('s_articles_esd', 's_articles.id = s_articles_esd.articleID', array('esdid' => 'id'))
+            ->joinLeft('asign_yellowcube_product', 'asign_yellowcube_product.artid = s_articles_details.articleID', array('id', 'lastSent', 'ycSpsDetails', 'ycResponse', 'ycReference', 'createDate'));
 
         //If a filter is set
         if ($filters) {
@@ -96,9 +95,9 @@ class Repository extends ModelRepository
     /**
      * Stores additional information from Articles
      *
-     * @param string  $sData        Serialized data values
-     * @param integer $id           Selected Row Id
-     * @param integer $artid        Selected Article Id
+     * @param string $sData Serialized data values
+     * @param integer $id Selected Row Id
+     * @param integer $artid Selected Article Id
      * @param integer $aIntHandling Internation shipping data
      *
      * @return null
@@ -112,7 +111,7 @@ class Repository extends ModelRepository
         // insert / update asign_yellowcube_product table
         // push in db.. But first check if the data is alreay present!
         if ($id) {
-            $iCount = Shopware()->Db()->query("select count(*) from `asign_yellowcube_product` where `id` = '" . $id . "' and `artid` = '". $artid . "'");
+            $iCount = Shopware()->Db()->query("select count(*) from `asign_yellowcube_product` where `id` = '" . $id . "' and `artid` = '" . $artid . "'");
             $blUpdate = true;
         }
 
@@ -161,55 +160,56 @@ class Repository extends ModelRepository
     /**
      * Returns article data based on artid
      *
-     * @param integer $artid article item id
-     * @param bool    $artid if its a CRON
+     * @param integer $iArticleId article item id
+     * @param bool $isCron if its a CRON
      *
-     * @return string
+     * @return array $aResult
      */
-    public function getArticleDetails($artid, $isCron = false)
+    public function getArticleDetails($iArticleId, $isCron = false)
     {
         $sSql = "SELECT s_articles.name as `name`, s_articles_details.articleID, s_articles_details.weight, s_articles_details.length, s_articles_details.width, s_articles_details.height, s_articles_details.ordernumber, s_articles_details.ean, s_articles_details.instock FROM s_articles";
         $sSql .= " JOIN s_articles_details ON s_articles.id = s_articles_details.articleID";
         $sSql .= " JOIN asign_yellowcube_product ON s_articles.id = asign_yellowcube_product.artid";
-        $sSql .= " WHERE s_articles.id = '" . $artid . "' AND s_articles_details.kind = 1";
+        $sSql .= " WHERE s_articles.id = '" . $iArticleId . "' AND s_articles_details.kind = 1";
 
         // cron?
         if ($isCron) {
             $sSql .= " AND asign_yellowcube_product.ycReference = 0"; // include non-YC response
         }
 
-        $result = Shopware()->Db()->fetchRow($sSql);
+        $aResult = Shopware()->Db()->fetchRow($sSql);
 
         // attach esd status
-        $result['esdid'] = Shopware()->Db()->fetchOne("select count(*) from `s_articles_esd` where `articleID` = '" . $artid . "'");
+        $aResult['esdid'] = Shopware()->Db()->fetchOne("select count(*) from `s_articles_esd` where `articleID` = '" . $iArticleId . "'");
 
         // attach ycube article parameters
-        $ycSpsDetails = Shopware()->Db()->fetchOne("select `ycSpsDetails` from `asign_yellowcube_product` where `artid` = '".$result['articleID']."'");
+        $ycSpsDetails = Shopware()->Db()->fetchOne("select `ycSpsDetails` from `asign_yellowcube_product` where `artid` = '" . $aResult['articleID'] . "'");
         $aParams = unserialize($ycSpsDetails);
         if ($aParams) {
             $aParams['altnum'] = self::ALT_NUM_VAL; // default
             $aParams['altdeno'] = self::ALT_DENO_VAL;// default
         }
-        $result['ycparams'] = $aParams;
 
-        if ($result) {
+        $aResult['ycparams'] = $aParams;
+
+        if ($aResult) {
             // get translations
-            $aTrans = Shopware()->Db()->fetchRow("SELECT s_articles_translations.name as `altname`, s_articles_translations.languageID, s_core_locales.locale as `altlang` FROM `s_articles_translations` JOIN `s_core_locales` ON s_articles_translations.languageID = s_core_locales.id WHERE s_articles_translations.articleID = '".$result['articleID']."'");
+            $aTrans = Shopware()->Db()->fetchRow("SELECT s_articles_translations.name as `altname`, s_articles_translations.languageID, s_core_locales.locale as `altlang` FROM `s_articles_translations` JOIN `s_core_locales` ON s_articles_translations.languageID = s_core_locales.id WHERE s_articles_translations.articleID = '" . $aResult['articleID'] . "'");
 
             // set multilang value
-            $result['pronames'][] = array(
-                'lang' => Shopware()->Db()->fetchOne("select `locale` from `s_core_locales` where `id` <> '" . $result['languageID'] . "'"),
-                'name' => $result['name']
+            $aResult['pronames'][] = array(
+                'lang' => Shopware()->Db()->fetchOne("select `locale` from `s_core_locales` where `id` <> '" . $aResult['languageID'] . "'"),
+                'name' => $aResult['name'],
             );
 
             if ($aTrans) {
-                $result['pronames'][] = array(
+                $aResult['pronames'][] = array(
                     'lang' => $aTrans['altlang'],
-                    'name' => $aTrans['altname']
+                    'name' => $aTrans['altname'],
                 );
             }
 
-            return $result;
+            return $aResult;
         }
     }
 
@@ -217,32 +217,32 @@ class Repository extends ModelRepository
      * Function to save the Response
      * received from Yellowcube
      *
-     * @param array $aResponseData Array of response
+     * @param object $oResponse Object of response
      * @param string $artid Article id
      *
-     * @return null
+     * @return void
      * @throws \Exception
      */
-    public function saveArticleResponseData($aResponseData, $artid)
+    public function saveArticleResponseData($oResponse, $artid)
     {
         // if response is not "E" then?
-        if ($aResponseData['StatusType'] !== 'E') {
-            $sReference = ", `ycReference` = '" . $aResponseData['Reference'] . "'";
+        if ($oResponse->StatusType !== 'E') {
+            $sReference = ", `ycReference` = '" . $oResponse->Reference . "'";
         }
 
-        if (isset($aResponseData['data']['success']) && !$aResponseData['data']['success']) {
-            throw new \Exception($aResponseData['data']['message']);
+        if (isset($oResponse->data->success) && !$oResponse->data->success) {
+            throw new \Exception($oResponse->data->success);
         }
 
         // serialize the data
-        $sData = serialize($aResponseData);
+        $sData = serialize($oResponse);
 
         // update reference number, but first check if alreay entry?
         $iCount = Shopware()->Db()->fetchOne("select count(*) from `asign_yellowcube_product` where `artid` = '" . $artid . "'");
 
         // if present then?
         if ($iCount) {
-            $sQuery = "update `asign_yellowcube_product` set `lastSent` = 1, `ycResponse` = '" . $sData ."'" . $sReference . " where `artid` = '" . $artid . "'";
+            $sQuery = "update `asign_yellowcube_product` set `lastSent` = 1, `ycResponse` = '" . $sData . "'" . $sReference . " where `artid` = '" . $artid . "'";
         } else {
             $sQuery = "insert into `asign_yellowcube_product` set `artid` = '" . $artid . "', `lastSent` = 1, `ycResponse` = '" . $sData . "'" . $sReference;
         }
@@ -261,11 +261,11 @@ class Repository extends ModelRepository
      */
     public function getYellowcubeReport($itemId, $sTable, $sColumn = 'ycResponse')
     {
-    	if (!$sColumn) {
+        if (!$sColumn) {
             $sColumn = 'ycResponse';
         }
 
-        $sQuery = "select `" . $sColumn . "` from `" . $sTable . "` where `artid` = '" . $itemId ."'";
+        $sQuery = "select `" . $sColumn . "` from `" . $sTable . "` where `artid` = '" . $itemId . "'";
         $aComplete = Shopware()->Db()->fetchOne($sQuery);
         $aResponse = unserialize($aComplete);
 
@@ -276,6 +276,6 @@ class Repository extends ModelRepository
             }
         }
 
-	}
+    }
 
 }

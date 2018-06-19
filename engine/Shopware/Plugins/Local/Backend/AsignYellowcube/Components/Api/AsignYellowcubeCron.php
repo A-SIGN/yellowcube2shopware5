@@ -3,14 +3,12 @@
 /**
  * This file handles CRON related functions
  *
- * PHP version 5
- *
  * @category  asign
  * @package   AsignYellowcube
  * @author    entwicklung@a-sign.ch
  * @copyright asign
  * @license   https://www.a-sign.ch/
- * @version   2.1
+ * @version   2.1.3
  * @link      https://www.a-sign.ch/
  * @see       AsignYellowcubeCron
  * @since     File available since Release 1.0
@@ -95,7 +93,7 @@ class AsignYellowcubeCron
                     // check if the Status in the Order table
                     $sRequestField = $this->getOrderRequestField($iOrdid);
                     $iStatusCode = $this->getRecordedStatus($iOrdid, 'asign_yellowcube_orders', $sRequestField);
-                    $aResponse = array();
+                    $aResponse = array('success' => false);
 
                     // get YC response
                     if (($iStatusCode == null || $iStatusCode == 101) && $this->objOrders->getFieldData($iOrdid, $sRequestField) == '') {
@@ -114,7 +112,7 @@ class AsignYellowcubeCron
                     }
 
                     // increment the counter
-                    if (count($aResponse) !== 0) {
+                    if ($aResponse['success']) {
                         $this->objOrders->saveOrderResponseData($aResponse, $iOrdid);
                         $iCount++;
                     }
@@ -175,14 +173,15 @@ class AsignYellowcubeCron
 
                 try {
                     $artid = $article['id'];
-                    $oDetails = $this->objProduct->getArticleDetails($article['id'], true);
+                    $aDetails = $this->objProduct->getArticleDetails($article['id'], true);
                     $iStatusCode = $this->getRecordedStatus($artid, 'asign_yellowcube_product');
+                    $aResponse = array('success' => false);
 
                     // if not 10 then insert the article
                     // execute the article object
                     if ($iStatusCode != 10) {
                         echo "Submitting Article for Article-ID: " . $artid . "\n";
-                        $aResponse = $this->objYcubeCore->insertArticleMasterData($oDetails, $sFlag);
+                        $aResponse = $this->objYcubeCore->insertArticleMasterData($aDetails, $sFlag);
                     } elseif ($iStatusCode == 10 && $iStatusCode != 100) {
                         // get the status
                         echo "Getting Article status for Article-ID: " . $artid . "\n";
@@ -190,8 +189,9 @@ class AsignYellowcubeCron
                     }
 
                     // increment the counter
-                    if (count($aResponse) > 0) {
-                        $this->objProduct->saveArticleResponseData($aResponse, $artid);
+                    if ($aResponse['success']) {
+                        $oResponse = $aResponse['data'];
+                        $this->objProduct->saveArticleResponseData($oResponse, $artid);
                         $iCount++;
                     }
                 } catch (\Exception $e) {
@@ -221,7 +221,7 @@ class AsignYellowcubeCron
             $aResponse = $this->objYcubeCore->getInventory();
 
             // update
-            if (count($aResponse) > 0) {
+            if ($aResponse['success']) {
                 $iCount = $this->objInventory->saveInventoryData($aResponse["data"]);
             }
         } catch (Exception $e) {
