@@ -304,7 +304,7 @@ class Shopware_Controllers_Backend_AsignYellowcube extends Shopware_Controllers_
             $this->getRepository('Product')->saveAdditionalData($sParams, $updateId, $articleId, $aIntHandling);
 
             $this->View()->assign(array('success' => true));
-        } catch (Exception $e) {
+        } catch (\Exception $e) {
             $this->View()->assign(
                 array(
                     'success' => false,
@@ -383,7 +383,7 @@ class Shopware_Controllers_Backend_AsignYellowcube extends Shopware_Controllers_
                     );
                 }
             }
-        } catch (Exception $e) {
+        } catch (\Exception $e) {
             $this->View()->assign(
                 array(
                     'success' => false,
@@ -460,7 +460,7 @@ class Shopware_Controllers_Backend_AsignYellowcube extends Shopware_Controllers_
                     );
                 }
             }
-        } catch (Exception $e) {
+        } catch (\Exception $e) {
             $this->View()->assign(
                 array(
                     'success' => false,
@@ -487,7 +487,7 @@ class Shopware_Controllers_Backend_AsignYellowcube extends Shopware_Controllers_
             $oModel->saveOrderEoriNumber($orderId, $eoriNumber);
 
             $this->View()->assign(array('success' => true));
-        } catch (Exception $e) {
+        } catch (\Exception $e) {
             $this->View()->assign(
                 array(
                     'success' => false,
@@ -525,7 +525,7 @@ class Shopware_Controllers_Backend_AsignYellowcube extends Shopware_Controllers_
                     )
                 );
             }
-        } catch (Exception $e) {
+        } catch (\Exception $e) {
             $this->View()->assign(
                 array(
                     'success' => false,
@@ -565,7 +565,7 @@ class Shopware_Controllers_Backend_AsignYellowcube extends Shopware_Controllers_
                     )
                 );
             }
-        } catch (Exception $e) {
+        } catch (\Exception $e) {
             $this->View()->assign(
                 array(
                     'success' => false,
@@ -606,7 +606,7 @@ class Shopware_Controllers_Backend_AsignYellowcube extends Shopware_Controllers_
                     )
                 );
             }
-        } catch (Exception $e) {
+        } catch (\Exception $e) {
             $this->View()->assign(
                 array(
                     'success' => false,

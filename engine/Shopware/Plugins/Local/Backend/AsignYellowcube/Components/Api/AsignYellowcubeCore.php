@@ -131,11 +131,11 @@ class AsignYellowcubeCore
                 'success' => true,
                 'data'    => $oResponse,
             ));
-        } catch (Exception $soapex) {
-            $this->oLogs->saveLogsData('getInventory', $soapex);
+        } catch (\Exception $oEx) {
+            $this->oLogs->saveLogsData('getInventory', $oEx);
             return (array(
                 'success' => false,
-                'message' => $soapex->getMessage(),
+                'message' => $oEx->getMessage(),
             ));
         }
     }
@@ -159,7 +159,7 @@ class AsignYellowcubeCore
                 'success' => true,
                 'data'    => $oResponse,
             ));
-        } catch (Exception $oEx) {
+        } catch (\Exception $oEx) {
             $this->oLogs->saveLogsData('insertArticleMasterData', $oEx);
             return (array(
                 'success' => false,
@@ -206,10 +206,10 @@ class AsignYellowcubeCore
         try {
             $oResponse = $this->oSoapApi->callFunction($aFunc[$sType], $oObject);
             return (array(
-                'success' => false,
+                'success' => true,
                 'data'    => $oResponse,
             ));
-        } catch (Exception $oEx) {
+        } catch (\Exception $oEx) {
             $this->oLogs->saveLogsData('getYCGeneralDataStatus', $oEx);
             return (array(
                 'success' => false,
@@ -379,7 +379,7 @@ class AsignYellowcubeCore
                     'success' => true,
                     'data'    => $oResponse,
                 ));
-            } catch (Exception $oEx) {
+            } catch (\Exception $oEx) {
                 $this->oLogs->saveLogsData('createYCCustomerOrder', $oEx);
                 return (array(
                     'success' => false,
@@ -605,7 +605,7 @@ class AsignYellowcubeCore
             } else {
                 return $zipValue;
             }
-        } catch (Exception $sEx) {
+        } catch (\Exception $sEx) {
             $this->oLogs->saveLogsData('verifyZipStatus', $sEx);
             return (array(
                 'success' => false,

@@ -83,7 +83,7 @@ class XMLSecurityKey {
                         break;
                     }
                 }
-                throw new Exception('Certificate "type" (private/public) must be passed via parameters');
+                throw new \Exception('Certificate "type" (private/public) must be passed via parameters');
                 return;
             case (XMLSecurityKey::RSA_SHA1):
                 $this->cryptParams['library'] = 'openssl';
@@ -247,12 +247,12 @@ class XMLSecurityKey {
     private function encryptOpenSSL($data) {
         if ($this->cryptParams['type'] == 'public') {
             if (! openssl_public_encrypt($data, $encrypted_data, $this->key, $this->cryptParams['padding'])) {
-                throw new Exception('Failure encrypting Data');
+                throw new \Exception('Failure encrypting Data');
                 return;
             }
         } else {
             if (! openssl_private_encrypt($data, $encrypted_data, $this->key, $this->cryptParams['padding'])) {
-                throw new Exception('Failure encrypting Data');
+                throw new \Exception('Failure encrypting Data');
                 return;
             }
         }

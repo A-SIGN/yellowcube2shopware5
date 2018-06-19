@@ -240,7 +240,7 @@ class PdfaDocument extends Shopware_Components_Document
                     $this->updateOrderBillNumber($orderID, $this->_documentHash);
                 }
             }
-        } catch (Exception $ex) {
+        } catch (\Exception $ex) {
             $oLogs = Shopware()->Models()->getRepository("Shopware\CustomModels\AsignModels\Errorlogs\Errorlogs");
             $oLogs->saveLogsData('pdfaRender', $ex);
         }

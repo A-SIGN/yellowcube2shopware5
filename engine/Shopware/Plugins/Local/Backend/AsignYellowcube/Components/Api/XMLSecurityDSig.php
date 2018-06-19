@@ -1,7 +1,6 @@
 <?php
 
 namespace Shopware\AsignYellowcube\Components\Api;
-use Shopware\AsignYellowcube\Components\Api\XMLSecurityKey;
 
 class XMLSecurityDSig {
     const XMLDSIGNS = 'http://www.w3.org/2000/09/xmldsig#';
@@ -524,7 +523,7 @@ class XMLSecurityDSig {
             if ($algorithm) {
                 try {
                     $objKey = new XMLSecurityKey($algorithm, array('type'=>'public'));
-                } catch (Exception $e) {
+                } catch (\Exception $e) {
                     return NULL;
                 }
                 return $objKey;

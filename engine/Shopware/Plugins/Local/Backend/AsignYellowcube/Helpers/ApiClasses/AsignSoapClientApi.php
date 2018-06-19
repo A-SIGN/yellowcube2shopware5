@@ -27,6 +27,10 @@ use Shopware\AsignYellowcube\Helpers\ApiClasses\Utils\AsignSoapclient;
  */
 class AsignSoapClientApi
 {
+    const YELLOWCUBE_WSDL_URL_TEST = 'https://service-test.swisspost.ch/apache/yellowcube-test/?wsdl';
+    const YELLOWCUBE_WSDL_URL_DEV = 'https://service-test.swisspost.ch/apache/yellowcube-int/?wsdl';
+    const YELLOWCUBE_WSDL_URL_PROD = 'https://service.swisspost.ch/apache/yellowcube/?wsdl';
+
     /**
      * Returns Operation mode for this process
      *
@@ -57,7 +61,13 @@ class AsignSoapClientApi
      */
     public function getSoapWsdlUrl()
     {
-        return $this->returnConfigParam('sYellowCubeWsdlUrl');
+        if ($this->getSoapOperatingMode() == 'P') {
+            return self::YELLOWCUBE_WSDL_URL_PROD;
+        } elseif ($this->getSoapOperatingMode() == 'D') {
+            return self::YELLOWCUBE_WSDL_URL_DEV;
+        } else {
+            return self::YELLOWCUBE_WSDL_URL_TEST;
+        }
     }
 
     /**
@@ -331,35 +341,24 @@ class AsignSoapClientApi
     protected function initSoap()
     {
         // api configs
-        try{
-            $wsdl           = $this->getSoapWsdlUrl();
-            $sCertFilename  = $this->getCertFilename();
-            $certPath = Shopware()->AppPath('Plugins/Local/Backend/AsignYellowcube/cert') . $sCertFilename;
+        $wsdl = $this->getSoapWsdlUrl();
+        $sCertFilename = $this->getCertFilename();
+        $certPath = Shopware()->AppPath('Plugins/Local/Backend/AsignYellowcube/cert') . $sCertFilename;
 
-            // set SOAP parameters
-            $aParams  = array(
-                'soap_version'  => SOAP_1_1,
-                'trace'         => true,
-                'exception'     => true,
-                'features'      => SOAP_SINGLE_ELEMENT_ARRAYS,
-            );
+        // set SOAP parameters
+        $aParams = array(
+            'soap_version' => SOAP_1_1,
+            'trace'        => true,
+            'exception'    => true,
+            'features'     => SOAP_SINGLE_ELEMENT_ARRAYS,
+        );
 
-            // if only live then
-            if ($this->useCertificateForAllModes()) {
-                $aParams["local_cert"]    = $certPath;
-            }
-
-            return new AsignSoapclient($wsdl, $aParams);
-        } catch(Exception $sEx) {
-            $oLogs = Shopware()->Models()->getRepository("Shopware\CustomModels\AsignModels\Errorlogs\Errorlogs");
-            $oLogs->saveLogsData('SOAP_INIT', $sEx);
-
-            throw new Exception($sEx->getMessage());
-            return(array(
-                'success' => false,
-                'message' => $sEx->getMessage()
-            ));
+        // if only live then
+        if ($this->useCertificateForAllModes()) {
+            $aParams["local_cert"] = $certPath;
         }
+
+        return new AsignSoapclient($wsdl, $aParams);
     }
 
     /**
@@ -374,32 +373,22 @@ class AsignSoapClientApi
      */
     public function callFunction($sFnc, $oParams = null)
     {
-        try{
-            // soap call the function
-            $oClient = $this->initSoap();
-            $oResponse = $oClient->$sFnc($oParams);
+        // soap call the function
+        $oClient = $this->initSoap();
+        $oResponse = $oClient->$sFnc($oParams);
 
-            if (!($oResponse instanceof \stdClass)) {
-                throw new \Exception("Return isn't an object!");
-            }
-
-            // DEBUG: only for checking XML output
-            $devMail = $this->getDeveloperEmail();
-            if ($devMail != "") {
-                @mail($devMail, "SOAP_REQUEST", print_r($oClient->__getLastRequest(), 1)); // YC request
-                @mail($devMail, "SOAP_RESPONSE", print_r($oResponse, 1)); // YC response
-            }
-            // END-DEBUG
-
-            return $oResponse;
-        } catch(\Exception $sEx) {
-            $oLogs = Shopware()->Models()->getRepository("Shopware\CustomModels\AsignModels\Errorlogs\Errorlogs");
-            $oLogs->saveLogsData('SOAP_CALL', $sEx);
-
-            return(array(
-                'success' => false,
-                'message' => $sEx->getMessage()
-            ));
+        if (!($oResponse instanceof \stdClass)) {
+            throw new \Exception("Return isn't an object!");
         }
+
+        // DEBUG: only for checking XML output
+        $devMail = $this->getDeveloperEmail();
+        if ($devMail != "") {
+            @mail($devMail, "SOAP_REQUEST", print_r($oClient->__getLastRequest(), 1)); // YC request
+            @mail($devMail, "SOAP_RESPONSE", print_r($oResponse, 1)); // YC response
+        }
+        // END-DEBUG
+
+        return $oResponse;
     }
 }

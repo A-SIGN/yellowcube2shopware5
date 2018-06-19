@@ -117,7 +117,7 @@ class AsignYellowcubeCron
                         $iCount++;
                     }
 
-                } catch (Exception $e) {
+                } catch (\Exception $e) {
                     $this->objErrorLog->saveLogsData('Orders-CRON', $e);
                 }
             }
@@ -224,7 +224,7 @@ class AsignYellowcubeCron
             if ($aResponse['success']) {
                 $iCount = $this->objInventory->saveInventoryData($aResponse["data"]);
             }
-        } catch (Exception $e) {
+        } catch (\Exception $e) {
             $this->objErrorLog->saveLogsData('Inventory-CRON', $e);
         }
 

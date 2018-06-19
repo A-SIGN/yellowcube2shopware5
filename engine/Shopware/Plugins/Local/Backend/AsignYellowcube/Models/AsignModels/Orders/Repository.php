@@ -293,7 +293,7 @@ class Repository extends ModelRepository
                     $this->_bIsTrackingResponse = true;
                 }
             }
-        } catch (Exception $e) {
+        } catch (\Exception $e) {
             $oLogs = Shopware()->Models()->getRepository("Shopware\CustomModels\AsignModels\Errorlogs\Errorlogs");
             $oLogs->saveLogsData('saveOrderResponseData', $e);
         }
