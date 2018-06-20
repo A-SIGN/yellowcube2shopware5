@@ -140,6 +140,11 @@ class Repository extends ModelRepository
         foreach ($aArticles as $article) {
             $aResponse = unserialize($article['ycResponse']);
 
+            // convert object 2 array
+            if (is_object($aResponse)) {
+                $aResponse = json_decode(json_encode($aResponse), true);
+            }
+
             if ($aResponse['StatusCode'] == 100) {
                 Shopware()->Db()->query("UPDATE `s_articles_details` SET `instock` = '0' WHERE `articleID` = '" . $article['artid'] . "'");
             }

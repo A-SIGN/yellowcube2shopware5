@@ -15,7 +15,6 @@
 
 use Shopware\AsignYellowcube\Components\Api\AsignYellowcubeCore;
 use Shopware\AsignYellowcube\Components\Api\AsignYellowcubeCron;
-use Shopware\AsignYellowcube\Helpers\ApiClasses\AsignSoapClientApi;
 
 /**
  * Defines backend controller
@@ -116,7 +115,13 @@ class Shopware_Controllers_Backend_AsignYellowcube extends Shopware_Controllers_
 
             // get response first
             $aRsp = unserialize($product['ycResponse']);
-            if ($aRsp !== false) {
+
+            // convert object 2 array
+            if (is_object($aRsp)) {
+                $aRsp = json_decode(json_encode($aRsp), true);
+            }
+
+            if (count($aRsp)) {
                 $aData['isaccepted'] = $this->isResponseAccepted($aRsp);
                 $aData['ycResponse'] = $this->getJsonEncodedData($aRsp);
             }
@@ -550,22 +555,12 @@ class Shopware_Controllers_Backend_AsignYellowcube extends Shopware_Controllers_
             $sFlag = $this->getPluginConfig()->sCronArtFlag;
             $iCount = $oYCron->autoInsertArticles($sMode, $sFlag);
 
-            // save in database
-            if ($iCount > 0) {
-                $this->View()->assign(
-                    array(
-                        'success' => true,
-                        'dcount'  => $iCount,
-                    )
-                );
-            } else {
-                $this->View()->assign(
-                    array(
-                        'success' => false,
-                        'code'    => -1,
-                    )
-                );
-            }
+            $this->View()->assign(
+                array(
+                    'success' => true,
+                    'dcount'  => $iCount,
+                )
+            );
         } catch (Exception $e) {
             $this->View()->assign(
                 array(
@@ -696,9 +691,9 @@ class Shopware_Controllers_Backend_AsignYellowcube extends Shopware_Controllers_
     /**
      * Checks if the response is finalized. Check for code=100
      *
-     * @param string $aData - Array of Data
+     * @param array $aData - Array of Data
      *
-     * @return string
+     * @return int
      */
     protected function isResponseAccepted($aData)
     {

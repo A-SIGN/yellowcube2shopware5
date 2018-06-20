@@ -251,9 +251,9 @@ class Repository extends ModelRepository
      *
      * @param string $itemId Item id
      * @param string $sTable Table name
-     *
      * @param string $sColumn
-     * @return array
+     *
+     * @return array $aResponse
      */
     public function getYellowcubeReport($itemId, $sTable, $sColumn = 'ycResponse')
     {
@@ -262,16 +262,13 @@ class Repository extends ModelRepository
         }
 
         $sQuery = "select `" . $sColumn . "` from `" . $sTable . "` where `artid` = '" . $itemId . "'";
-        $aComplete = Shopware()->Db()->fetchOne($sQuery);
-        $aResponse = unserialize($aComplete);
+        $sData = Shopware()->Db()->fetchOne($sQuery);
+        $aData = unserialize($sData);
 
-        $aReturn = array();
-        if (!empty($aResponse)) {
-            foreach ($aResponse as $key => $result) {
-                $aReturn[$key] = $result;
-            }
+        if (is_object($aData)) {
+            $aData = json_decode(json_encode($aData), true);
         }
 
+        return $aData;
     }
-
 }

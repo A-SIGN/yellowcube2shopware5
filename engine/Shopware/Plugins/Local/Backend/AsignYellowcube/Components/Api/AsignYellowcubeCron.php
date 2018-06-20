@@ -96,16 +96,22 @@ class AsignYellowcubeCron
                     // get YC response
                     if (($iStatusCode == null || $iStatusCode == 101) && $this->objOrders->getFieldData($iOrdid, $sRequestField) == '') {
                         // execute the order object
-                        echo "Submitting Order for OrderID: " . $iOrdid . "\n";
+                        if ($isCron) {
+                            echo "Submitting Order for OrderID: " . $iOrdid . "\n";
+                        }
                         $oDetails = $this->objOrders->getOrderDetails($iOrdid);
                         $aResponse = $this->objYcubeCore->createYCCustomerOrder($oDetails);
                     } elseif ($iStatusCode < 100) {
                         // get the status
-                        echo "Requesting WAB status for OrderID: " . $iOrdid . "\n";
+                        if ($isCron) {
+                            echo "Requesting WAB status for OrderID: " . $iOrdid . "\n";
+                        }
                         $aResponse = $this->objYcubeCore->getYCGeneralDataStatus($iOrdid, "WAB");
                     } elseif ($iStatusCode == 100) {
                         // get the WAR status
-                        echo "Requesting WAR status for OrderID: " . $iOrdid . "\n";
+                        if ($isCron) {
+                            echo "Requesting WAR status for OrderID: " . $iOrdid . "\n";
+                        }
                         $aResponse = $this->objYcubeCore->getYCGeneralDataStatus($iOrdid, "WAR");
                     }
 
@@ -175,14 +181,18 @@ class AsignYellowcubeCron
                     $iStatusCode = $this->getRecordedStatus($artid, 'asign_yellowcube_product');
                     $aResponse = array('success' => false);
 
-                    // if not 10 then insert the article
+                    // if not 100 then insert the article
                     // execute the article object
-                    if ($iStatusCode != 10) {
-                        echo "Submitting Article for Article-ID: " . $artid . "\n";
+                    if ($iStatusCode === null) {
+                        if ($isCron) {
+                            echo "Submitting Article for Article-ID: " . $artid . "\n";
+                        }
                         $aResponse = $this->objYcubeCore->insertArticleMasterData($aDetails, $sFlag);
-                    } elseif ($iStatusCode == 10 && $iStatusCode != 100) {
+                    } elseif ($iStatusCode == 10) {
                         // get the status
-                        echo "Getting Article status for Article-ID: " . $artid . "\n";
+                        if ($isCron) {
+                            echo "Getting Article status for Article-ID: " . $artid . "\n";
+                        }
                         $aResponse = $this->objYcubeCore->getYCGeneralDataStatus($artid, "ART");
                     }
 
@@ -259,9 +269,9 @@ class AsignYellowcubeCron
      *
      * @param string $itemid item id
      * @param string $sTable Table name
-     *
      * @param string null $sResponseType
-     * @return string
+     *
+     * @return int|null
      */
     protected function getRecordedStatus($itemid, $sTable, $sResponseField = null)
     {
@@ -271,6 +281,6 @@ class AsignYellowcubeCron
         }
         $aParams = $oModel->getYellowcubeReport($itemid, $sTable, $sResponseField);
 
-        return $aParams["StatusCode"];
+        return isset($aParams["StatusCode"]) ? $aParams["StatusCode"] : null;
     }
 }

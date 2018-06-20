@@ -6,7 +6,7 @@
  * @author    entwicklung@a-sign.ch
  * @copyright A-Sign
  * @license   https://www.a-sign.ch/
- * @version   2.1
+ * @version   2.1.3
  * @link      https://www.a-sign.ch/
  * @see       Shopware.apps.AsignYellowcube.controller.Product
  * @since     File available since Release 1.0
@@ -330,12 +330,7 @@ Ext.define('Shopware.apps.AsignYellowcube.controller.Product', {
                 response = Ext.JSON.decode(result.responseText);
                 var message = response.message,
                     code = response.code,
-                    total = 1;
-
-                // total > 1? then show it..
-                if (response.dcount > 1) {
                     total = response.dcount;
-                }
 
                 // if the success message..
                 win.setLoading(false);
