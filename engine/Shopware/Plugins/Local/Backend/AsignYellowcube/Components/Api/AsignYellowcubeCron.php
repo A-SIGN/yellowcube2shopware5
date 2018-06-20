@@ -1,5 +1,4 @@
 <?php
-
 /**
  * This file handles CRON related functions
  *
@@ -16,8 +15,7 @@
 
 namespace Shopware\AsignYellowcube\Components\Api;
 
-use Shopware\AsignYellowcube\Components\Api\AsignYellowcubeCore;
-use Shopware\AsignYellowcube\Helpers\ApiClasses\AsignSoapClientApi;
+use Exception;
 
 /**
  * Handles CRON related function
@@ -25,7 +23,7 @@ use Shopware\AsignYellowcube\Helpers\ApiClasses\AsignSoapClientApi;
  * @category Asign
  * @package  AsignYellowcube
  * @author   entwicklung@a-sign.ch
- * @link     http://www.a-sign.ch
+ * @link     https://www.a-sign.ch
  */
 class AsignYellowcubeCron
 {
@@ -117,7 +115,7 @@ class AsignYellowcubeCron
                         $iCount++;
                     }
 
-                } catch (\Exception $e) {
+                } catch (Exception $e) {
                     $this->objErrorLog->saveLogsData('Orders-CRON', $e);
                 }
             }
@@ -190,11 +188,10 @@ class AsignYellowcubeCron
 
                     // increment the counter
                     if ($aResponse['success']) {
-                        $oResponse = $aResponse['data'];
-                        $this->objProduct->saveArticleResponseData($oResponse, $artid);
+                        $this->objProduct->saveArticleResponseData($aResponse['data'], $artid);
                         $iCount++;
                     }
-                } catch (\Exception $e) {
+                } catch (Exception $e) {
                     $this->objErrorLog->saveLogsData('Articles-CRON', $e);
                 }
             }
@@ -224,7 +221,7 @@ class AsignYellowcubeCron
             if ($aResponse['success']) {
                 $iCount = $this->objInventory->saveInventoryData($aResponse["data"]);
             }
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $this->objErrorLog->saveLogsData('Inventory-CRON', $e);
         }
 

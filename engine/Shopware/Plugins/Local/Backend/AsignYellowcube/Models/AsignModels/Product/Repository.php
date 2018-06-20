@@ -217,25 +217,21 @@ class Repository extends ModelRepository
      * Function to save the Response
      * received from Yellowcube
      *
-     * @param object $oResponse Object of response
+     * @param array $aResponse Array of response
      * @param string $artid Article id
      *
      * @return void
      * @throws \Exception
      */
-    public function saveArticleResponseData($oResponse, $artid)
+    public function saveArticleResponseData($aResponseData, $artid)
     {
         // if response is not "E" then?
-        if ($oResponse->StatusType !== 'E') {
-            $sReference = ", `ycReference` = '" . $oResponse->Reference . "'";
-        }
-
-        if (isset($oResponse->data->success) && !$oResponse->data->success) {
-            throw new \Exception($oResponse->data->success);
+        if ($aResponseData['StatusType'] !== 'E') {
+            $sReference = ", `ycReference` = '" . $aResponseData['Reference'] . "'";
         }
 
         // serialize the data
-        $sData = serialize($oResponse);
+        $sData = serialize($aResponseData);
 
         // update reference number, but first check if alreay entry?
         $iCount = Shopware()->Db()->fetchOne("select count(*) from `asign_yellowcube_product` where `artid` = '" . $artid . "'");

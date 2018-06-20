@@ -76,11 +76,11 @@ class Repository extends ModelRepository
     /**
      * Stores inventory information received from Yellowcube
      *
-     * @param object $oResponseData Object of response
+     * @param array $aResponseData Object of response
      *
      * @return integer Updated articles
      */
-    public function saveInventoryData($oResponseData)
+    public function saveInventoryData($aResponseData)
     {
         // format the response data
         $iCount = 0;
@@ -88,27 +88,27 @@ class Repository extends ModelRepository
         // reset the inventory data
         $this->resetInventoryData();
 
-        foreach ($oResponseData->ArticleList->Article as $oArticle) {
-            $qtyISO  = $oArticle->QuantityUOM->QuantityISO;
-            $qtyUOM  = $oArticle->QuantityUOM->_;
-            $ycartnr = $oArticle->YCArticleNo;
-            $artnr   = $oArticle->ArticleNo;
-            $artdesc = $oArticle->ArticleDescription;
+        foreach ($aResponseData['ArticleList']['Article'] as $aArticle) {
+            $qtyISO  = $aArticle['QuantityUOM']['QuantityISO'];
+            $qtyUOM  = $aArticle['QuantityUOM']['_'];
+            $ycartnr = $aArticle['YCArticleNo'];
+            $artnr   = $aArticle['ArticleNo'];
+            $artdesc = $aArticle['ArticleDescription'];
 
             // entry id to avoid duplicates
             $mainId = substr($ycartnr, 4);
 
             // frame the additioanal information array
             $aAddInfo = array(
-                'EAN'               => $oArticle->EAN,
-                'Plant'             => $oArticle->Plant,
-                'StorageLocation'   => $oArticle->StorageLocation,
-                'StockType'         => $oArticle->StockType,
+                'EAN'               => $aArticle['EAN'],
+                'Plant'             => $aArticle['Plant'],
+                'StorageLocation'   => $aArticle['StorageLocation'],
+                'StockType'         => $aArticle['StockType'],
                 'QuantityISO'       => $qtyISO,
                 'QuantityUOM'       => $qtyUOM,
-                'YCLot'             => $oArticle->YCLot,
-                'Lot'               => $oArticle->Lot,
-                'BestBeforeDate'    => $oArticle->BestBeforeDate,
+                'YCLot'             => $aArticle['YCLot'],
+                'Lot'               => $aArticle['Lot'],
+                'BestBeforeDate'    => $aArticle['BestBeforeDate'],
             );
             // serialize the data
             $sAdditional = serialize($aAddInfo);

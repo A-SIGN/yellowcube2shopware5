@@ -15,6 +15,7 @@
 
 namespace Shopware\AsignYellowcube\Helpers\ApiClasses;
 
+use Exception;
 use Shopware\AsignYellowcube\Helpers\ApiClasses\Utils\AsignSoapclient;
 
 /**
@@ -341,24 +342,31 @@ class AsignSoapClientApi
     protected function initSoap()
     {
         // api configs
-        $wsdl = $this->getSoapWsdlUrl();
-        $sCertFilename = $this->getCertFilename();
-        $certPath = Shopware()->AppPath('Plugins/Local/Backend/AsignYellowcube/cert') . $sCertFilename;
+        try {
+            $wsdl = $this->getSoapWsdlUrl();
+            $sCertFilename = $this->getCertFilename();
+            $certPath = Shopware()->AppPath('Plugins/Local/Backend/AsignYellowcube/cert') . $sCertFilename;
 
-        // set SOAP parameters
-        $aParams = array(
-            'soap_version' => SOAP_1_1,
-            'trace'        => true,
-            'exception'    => true,
-            'features'     => SOAP_SINGLE_ELEMENT_ARRAYS,
-        );
+            // set SOAP parameters
+            $aParams = array(
+                'soap_version' => SOAP_1_1,
+                'trace'        => true,
+                'exception'    => true,
+                'features'     => SOAP_SINGLE_ELEMENT_ARRAYS,
+            );
 
-        // if only live then
-        if ($this->useCertificateForAllModes()) {
-            $aParams["local_cert"] = $certPath;
+            // if only live then
+            if ($this->useCertificateForAllModes()) {
+                $aParams["local_cert"] = $certPath;
+            }
+
+            return new AsignSoapclient($wsdl, $aParams);
+        } catch (Exception $sEx) {
+            $oLogs = Shopware()->Models()->getRepository("Shopware\CustomModels\AsignModels\Errorlogs\Errorlogs");
+            $oLogs->saveLogsData('SOAP_INIT', $sEx);
+
+            throw new Exception($sEx->getMessage());
         }
-
-        return new AsignSoapclient($wsdl, $aParams);
     }
 
     /**
@@ -369,7 +377,7 @@ class AsignSoapClientApi
      * @param string $sFnc Function to be called
      * @param object $oParams object of params to be passed
      *
-     * @return object
+     * @return array $aResponse
      */
     public function callFunction($sFnc, $oParams = null)
     {
@@ -378,17 +386,19 @@ class AsignSoapClientApi
         $oResponse = $oClient->$sFnc($oParams);
 
         if (!($oResponse instanceof \stdClass)) {
-            throw new \Exception("Return isn't an object!");
+            throw new Exception("Return isn't an object!");
         }
+
+        $aResponse = json_decode(json_encode($oResponse), true);
 
         // DEBUG: only for checking XML output
         $devMail = $this->getDeveloperEmail();
         if ($devMail != "") {
             @mail($devMail, "SOAP_REQUEST", print_r($oClient->__getLastRequest(), 1)); // YC request
-            @mail($devMail, "SOAP_RESPONSE", print_r($oResponse, 1)); // YC response
+            @mail($devMail, "SOAP_RESPONSE", print_r($aResponse, 1)); // YC response
         }
         // END-DEBUG
 
-        return $oResponse;
+        return $aResponse;
     }
 }

@@ -14,8 +14,8 @@
 
 namespace Shopware\CustomModels\AsignModels\Orders;
 
+use Exception;
 use Shopware\Components\Model\ModelRepository;
-
 use Shopware\Models\Order\Order;
 use Shopware\Models\Order\Status;
 
@@ -237,7 +237,7 @@ class Repository extends ModelRepository
                 return;
             }
 
-            $oResponse = $aResponse['data'];
+            $aResponseData = $aResponse['data'];
 
             if ($mode !== null) {
                 // if direct then?
@@ -254,10 +254,10 @@ class Repository extends ModelRepository
                 $sColumn = 'ycResponse';
             }
 
-            if (count($oResponse) > 0) {
+            if (count($aResponseData) > 0) {
                 // if response is not "E" then?
-                if ($oResponse->StatusType !== 'E' && isset($oResponse->Reference)) {
-                    $sReference = ", `ycReference` = '" . $oResponse->Reference . "'";
+                if ($aResponseData['StatusType'] !== 'E' && isset($aResponseData['Reference'])) {
+                    $sReference = ", `ycReference` = '" . $aResponseData['Reference'] . "'";
 
                     $oOrderResource = \Shopware\Components\Api\Manager::getResource('Order');
                     $oOrderResource->update($ordid, array(
@@ -266,7 +266,7 @@ class Repository extends ModelRepository
                 }
 
                 // push in db..
-                $sData = serialize($oResponse);
+                $sData = serialize($aResponseData);
                 $sWhere = " where `ordid` = '" . $ordid . "'";
 
                 // update reference number, but first check if alreay entry?
@@ -282,7 +282,7 @@ class Repository extends ModelRepository
 
                 // update tracking code in s_order table
                 if ($mode === 'WAR') {
-                    $sTrackingCode = $oResponse->WAR->GoodsIssue->CustomerOrderHeader->PostalShipmentNo;
+                    $sTrackingCode = $aResponseData['WAR']['GoodsIssue']['CustomerOrderHeader']['PostalShipmentNo'];
 
                     $orderResource = \Shopware\Components\Api\Manager::getResource('Order');
                     $orderResource->update($ordid, array(
@@ -293,7 +293,7 @@ class Repository extends ModelRepository
                     $this->_bIsTrackingResponse = true;
                 }
             }
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $oLogs = Shopware()->Models()->getRepository("Shopware\CustomModels\AsignModels\Errorlogs\Errorlogs");
             $oLogs->saveLogsData('saveOrderResponseData', $e);
         }

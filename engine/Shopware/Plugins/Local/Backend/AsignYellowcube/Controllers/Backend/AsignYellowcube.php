@@ -15,6 +15,7 @@
 
 use Shopware\AsignYellowcube\Components\Api\AsignYellowcubeCore;
 use Shopware\AsignYellowcube\Components\Api\AsignYellowcubeCron;
+use Shopware\AsignYellowcube\Helpers\ApiClasses\AsignSoapClientApi;
 
 /**
  * Defines backend controller
@@ -304,7 +305,7 @@ class Shopware_Controllers_Backend_AsignYellowcube extends Shopware_Controllers_
             $this->getRepository('Product')->saveAdditionalData($sParams, $updateId, $articleId, $aIntHandling);
 
             $this->View()->assign(array('success' => true));
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $this->View()->assign(
                 array(
                     'success' => false,
@@ -354,17 +355,17 @@ class Shopware_Controllers_Backend_AsignYellowcube extends Shopware_Controllers_
                 $blSuccess = $aResponse['success'];
 
                 if ($blSuccess) {
-                    $oResponse = $aResponse['data'];
-                    $iStatusCode = $oResponse->StatusCode;
+                    $aResponseData = $aResponse['data'];
+                    $iStatusCode = $aResponseData['StatusCode'];
                 }
 
                 // save in database
                 if ($blSuccess || $iStatusCode === 100) {
                     // log it event if its success / failure
-                    $oProductRepository->saveArticleResponseData($oResponse, $iArtId);
+                    $oProductRepository->saveArticleResponseData($aResponseData, $iArtId);
 
                     // get the serialized response
-                    $sTmpResult = $this->getSerializedResponse($oResponse); // to override the content
+                    $sTmpResult = $this->getSerializedResponse($aResponseData); // to override the content
 
                     $this->View()->assign(
                         array(
@@ -383,7 +384,7 @@ class Shopware_Controllers_Backend_AsignYellowcube extends Shopware_Controllers_
                     );
                 }
             }
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $this->View()->assign(
                 array(
                     'success' => false,
@@ -418,27 +419,27 @@ class Shopware_Controllers_Backend_AsignYellowcube extends Shopware_Controllers_
                 $aResponse = $oYCube->createYCCustomerOrder($aOrders);
             }
 
-            $oResponse = $aResponse['data'];
+            $aResponseData = $aResponse['data'];
 
             // check if any zip code error is linked?
-            if ($oResponse->zcode) {
+            if ($aResponseData['zcode']) {
                 $this->View()->assign(
                     array(
                         'success' => false,
-                        'code'    => $oResponse->zcode,
+                        'code'    => $aResponseData['zcode'],
                         'message' => $aResponse['message'],
                     )
                 );
             } else {
                 // get the serialized response
-                $sTmpResult = $this->getSerializedResponse($oResponse); // to override the content
+                $sTmpResult = $this->getSerializedResponse($aResponse); // to override the content
 
                 // log the response whether S or E
                 $oOrderRepository->saveOrderResponseData($aResponse, $iOrderId, $sMode);
 
                 $blStatusMsg = $aResponse['success'];
-                $sStatusType = $oResponse->StatusType;
-                $iStatusCode = $oResponse->StatusCode;
+                $sStatusType = $aResponseData['StatusType'];
+                $iStatusCode = $aResponseData['StatusCode'];
 
                 // save in database
                 if ($blStatusMsg || $sStatusType === 'S' || $iStatusCode === 100) {
@@ -460,7 +461,7 @@ class Shopware_Controllers_Backend_AsignYellowcube extends Shopware_Controllers_
                     );
                 }
             }
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $this->View()->assign(
                 array(
                     'success' => false,
@@ -487,7 +488,7 @@ class Shopware_Controllers_Backend_AsignYellowcube extends Shopware_Controllers_
             $oModel->saveOrderEoriNumber($orderId, $eoriNumber);
 
             $this->View()->assign(array('success' => true));
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $this->View()->assign(
                 array(
                     'success' => false,
@@ -525,7 +526,7 @@ class Shopware_Controllers_Backend_AsignYellowcube extends Shopware_Controllers_
                     )
                 );
             }
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $this->View()->assign(
                 array(
                     'success' => false,
@@ -565,7 +566,7 @@ class Shopware_Controllers_Backend_AsignYellowcube extends Shopware_Controllers_
                     )
                 );
             }
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $this->View()->assign(
                 array(
                     'success' => false,
@@ -606,7 +607,7 @@ class Shopware_Controllers_Backend_AsignYellowcube extends Shopware_Controllers_
                     )
                 );
             }
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $this->View()->assign(
                 array(
                     'success' => false,

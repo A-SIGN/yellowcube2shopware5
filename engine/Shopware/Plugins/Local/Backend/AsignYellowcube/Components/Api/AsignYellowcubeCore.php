@@ -16,6 +16,7 @@
 
 namespace Shopware\AsignYellowcube\Components\Api;
 
+use Exception;
 use Shopware\AsignYellowcube\Helpers\ApiClasses\AsignSoapClientApi;
 use Shopware\CustomModels\AsignModels\Orders\Validator;
 
@@ -126,16 +127,17 @@ class AsignYellowcubeCore
 
         // try importing inventory data...
         try {
-            $oResponse = $this->oSoapApi->callFunction("GetInventory", $oObject);
+            $aResponse = $this->oSoapApi->callFunction("GetInventory", $oObject);
+
             return (array(
                 'success' => true,
-                'data'    => $oResponse,
+                'data'    => $aResponse,
             ));
-        } catch (\Exception $oEx) {
-            $this->oLogs->saveLogsData('getInventory', $oEx);
+        } catch (Exception $soapex) {
+            $this->oLogs->saveLogsData('getInventory', $soapex);
             return (array(
                 'success' => false,
-                'message' => $oEx->getMessage(),
+                'message' => $soapex->getMessage(),
             ));
         }
     }
@@ -154,12 +156,12 @@ class AsignYellowcubeCore
         $oRequestData = $this->getYCFormattedArticleData($aArticle, $sFlag);
 
         try {
-            $oResponse = $this->oSoapApi->callFunction("InsertArticleMasterData", $oRequestData);
+            $aResponse = $this->oSoapApi->callFunction("InsertArticleMasterData", $oRequestData);
             return (array(
                 'success' => true,
-                'data'    => $oResponse,
+                'data'    => $aResponse,
             ));
-        } catch (\Exception $oEx) {
+        } catch (Exception $oEx) {
             $this->oLogs->saveLogsData('insertArticleMasterData', $oEx);
             return (array(
                 'success' => false,
@@ -204,12 +206,12 @@ class AsignYellowcubeCore
 
         // ping and get response...
         try {
-            $oResponse = $this->oSoapApi->callFunction($aFunc[$sType], $oObject);
+            $aResponse = $this->oSoapApi->callFunction($aFunc[$sType], $oObject);
             return (array(
                 'success' => true,
-                'data'    => $oResponse,
+                'data'    => $aResponse,
             ));
-        } catch (\Exception $oEx) {
+        } catch (Exception $oEx) {
             $this->oLogs->saveLogsData('getYCGeneralDataStatus', $oEx);
             return (array(
                 'success' => false,
@@ -374,12 +376,12 @@ class AsignYellowcubeCore
                 $oValidator = new Validator();
                 $oValidator->validate($oRequestData);
 
-                $oResponse = $this->oSoapApi->callFunction("CreateYCCustomerOrder", $oRequestData);
+                $aResponse = $this->oSoapApi->callFunction("CreateYCCustomerOrder", $oRequestData);
                 return (array(
                     'success' => true,
-                    'data'    => $oResponse,
+                    'data'    => $aResponse,
                 ));
-            } catch (\Exception $oEx) {
+            } catch (Exception $oEx) {
                 $this->oLogs->saveLogsData('createYCCustomerOrder', $oEx);
                 return (array(
                     'success' => false,
@@ -605,7 +607,7 @@ class AsignYellowcubeCore
             } else {
                 return $zipValue;
             }
-        } catch (\Exception $sEx) {
+        } catch (Exception $sEx) {
             $this->oLogs->saveLogsData('verifyZipStatus', $sEx);
             return (array(
                 'success' => false,
