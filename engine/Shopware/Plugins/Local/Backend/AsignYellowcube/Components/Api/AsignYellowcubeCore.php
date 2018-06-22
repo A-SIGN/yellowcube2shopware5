@@ -8,7 +8,7 @@
  * @author    entwicklung@a-sign.ch
  * @copyright asign
  * @license   https://www.a-sign.ch/
- * @version   2.1.3
+ * @version   2.1.4
  * @link      https://www.a-sign.ch/
  * @see       AsignYellowcubeCore
  * @since     File available since Release 1.0
@@ -338,19 +338,16 @@ class AsignYellowcubeCore
         $oObject->ArticleList->Article->UnitsOfMeasure->Volume["_"] = round($dVolume, 3);
 
         // article description
-        $arrayOfObjects = array();
-        $oObject->ArticleList->Article->ArticleDescriptions = new \stdClass();
+        $oObject->ArticleList->Article->ArticleDescriptions = array();
 
         // temporary single language // include the other languages from translated file
         foreach ($aArticle['pronames'] as $proname) {
-            $abbr = substr($proname['lang'], 0, 2);
-            $oObject->ArticleList->Article->ArticleDescriptions->ArticleDescription = array();
-            $oObject->ArticleList->Article->ArticleDescriptions->ArticleDescription["ArticleDescriptionLC"] = $abbr;
-            $oObject->ArticleList->Article->ArticleDescriptions->ArticleDescription["_"] = substr($proname['name'], 0, 40);
+            $oArticleDescription = new \stdClass();
+            $oArticleDescription->ArticleDescriptionLC = substr($proname['lang'], 0, 2);
+            $oArticleDescription->_ = substr($proname['name'], 0, 40);
 
-            $arrayOfObjects[] = $oObject->ArticleList->Article->ArticleDescriptions->ArticleDescription;
+            $oObject->ArticleList->Article->ArticleDescriptions[] = $oArticleDescription;
         }
-        $oObject->ArticleList->Article->ArticleDescriptions = $arrayOfObjects;
 
         return $oObject;
     }
@@ -366,12 +363,13 @@ class AsignYellowcubeCore
     public function createYCCustomerOrder($aOrders, $isReturn = false)
     {
         // get the formatted article data
-        $oRequestData = $this->getYCFormattedOrderData($aOrders, $isReturn);
+        $mRequestData = $this->getYCFormattedOrderData($aOrders, $isReturn);
 
         // if the response is an array and is having error message?
-        if (is_array($oRequestData) && $oRequestData['success'] === false) {
-            return $oRequestData;
-        } else {
+        if (is_array($mRequestData) && $mRequestData['success'] === false) {
+            return $mRequestData;
+        } elseif (is_object($mRequestData)) {
+            $oRequestData = $mRequestData;
             try {
                 $oValidator = new Validator();
                 $oValidator->validate($oRequestData);
@@ -388,6 +386,11 @@ class AsignYellowcubeCore
                     'message' => $oEx->getMessage(),
                 ));
             }
+        } else {
+            return (array(
+                'success' => false,
+                'message' => 'Unexpected return value',
+            ));
         }
     }
 
@@ -397,7 +400,7 @@ class AsignYellowcubeCore
      * @param array $aOrder array of order data
      * @param boolean $isReturn If this is return
      *
-     * @return array
+     * @return object|array
      */
     public function getYCFormattedOrderData($aOrder, $isReturn = false)
     {
@@ -519,12 +522,11 @@ class AsignYellowcubeCore
             }
 
             // order articles information
-            $arrayOfObjects = array();
-            $oObject->Order->OrderPositions = new \stdClass();
+            $oObject->Order->OrderPositions = array();
             $oOrderArticles = $aOrder['orderarticles'];
 
-            // define counter variable
-            $iterator = 1;
+            // define position number
+            $iPosNo = 10;
             foreach ($oOrderArticles as $key => $article) {
 
                 // if not set: use id > articles > Extended tab values
@@ -536,22 +538,29 @@ class AsignYellowcubeCore
                     $sQuantityISO = $this->oSoapApi->getYCQuantityISO();
                 }
 
-                $oObject->Order->OrderPositions->Position = new \stdClass();
-                $oObject->Order->OrderPositions->Position->PosNo = $iterator;
-                $oObject->Order->OrderPositions->Position->ArticleNo = $article['articleordernumber'];
-                //$oObject->Order->OrderPositions->Position->EAN              = $article['ean'];
-                $oObject->Order->OrderPositions->Position->Plant = $sPlantID;
-                $oObject->Order->OrderPositions->Position->Quantity = $article['quantity'];
-                $oObject->Order->OrderPositions->Position->QuantityISO = $sQuantityISO;
-                $oObject->Order->OrderPositions->Position->ShortDescription = substr($article['name'], 0, 40);
-                $oObject->Order->OrderPositions->Position->PickingMessage = $sPickMessage;
-                $oObject->Order->OrderPositions->Position->PickingMessageLC = $sLanguage;
-                $oObject->Order->OrderPositions->Position->ReturnReason = $sReturnReason;
-                $arrayOfObjects[] = $oObject->Order->OrderPositions->Position;// assign to array
+                $oPosition = new \stdClass();
+                $oPosition->PosNo = $iPosNo;
+                $oPosition->ArticleNo = $article['articleordernumber'];
+                //$oPosition->EAN              = $article['ean'];
+                $oPosition->Plant = $sPlantID;
+                $oPosition->Quantity = $article['quantity'];
+                $oPosition->QuantityISO = $sQuantityISO;
+                $oPosition->ShortDescription = substr($article['name'], 0, 40);
+                $oPosition->PickingMessage = $sPickMessage;
+                $oPosition->PickingMessageLC = $sLanguage;
+                $oPosition->ReturnReason = $sReturnReason;
 
-                $iterator = $iterator + 1;
+                // cleanup empty positions
+                foreach ($oPosition as $sKey => $sValue) {
+                    if (!strlen($sValue)) {
+                        unset($oPosition->$sKey);
+                    }
+                }
+
+                $oObject->Order->OrderPositions[] = $oPosition;
+
+                $iPosNo = $iPosNo + 10;
             }
-            $oObject->Order->OrderPositions = $arrayOfObjects; // reverse assign the array to object...
 
             // PDF order overview..
             $pdfData = $this->getOrderInvoiceData($aOrder['ordid']);
