@@ -24,20 +24,19 @@
 class Shopware_Plugins_Backend_AsignYellowcube_Bootstrap extends Shopware_Components_Plugin_Bootstrap
 {
     /**
-     * CRON default time interveal. Default = 5
+     * CRON default time interveal. Default = 3600 sec. (60 min.)
      * @var integer
      */
-    protected $iDefaultCronInterval = 5;
+    protected $iDefaultCronInterval = 3600;
 
     /**
      * Array of CRONs created for the execution
      * @var array
      */
-    protected $aCronEntries = array(
-        'ActArtCron'   => 'Asign-YC Active articles',
-        'InactArtCron' => 'Asign-YC Inactive articles", "InactArtCron',
-        'OrdCron'      => 'Asign-YC Prepayment Orders',
-        'InventCron'   => 'Asign-YC Inventory", "InventCron',
+    protected $aCronDefaultEntries = array(
+        'ActArtCron'   => 'A-SIGN YC Active articles',
+        'InactArtCron' => 'A-SIGN YC Inactive articles',
+        'OrdCron'      => 'A-SIGN YC Prepayment orders',
     );
 
     /**
@@ -168,17 +167,7 @@ class Shopware_Plugins_Backend_AsignYellowcube_Bootstrap extends Shopware_Compon
         $this->ycubeManageTableQueries();
         $this->ycubeUpdateSnippets();
         $this->ycubeTemplateEntry();
-
-        /** CRONJOB Setup **/
-        $this->subscribeEvent('Shopware_CronJob_InactArtCron', 'onRunInactArtCron');
-        $this->subscribeEvent('Shopware_CronJob_ActArtCron', 'onRunActArtCron');
-        $this->subscribeEvent('Shopware_CronJob_OrdCron', 'onRunOrdCron');
-        $this->subscribeEvent('Shopware_CronJob_InventCron', 'onRunInventCron');
-
-        //Cronjobname, Controllername, Interval, [aktiv]
-        foreach ($this->aCronEntries as $action => $name) {
-            $this->createCronJob($name, $action, $this->iDefaultCronInterval, true);
-        }
+        $this->ycubeCreateCron();
 
         return array(
             'success'         => true,
@@ -840,6 +829,44 @@ class Shopware_Plugins_Backend_AsignYellowcube_Bootstrap extends Shopware_Compon
                 $cronResource->autoInsertArticles('xx', $sFlag, true); // send all articles
                 $cronResource->autoSendYCOrders(true); // send all orders
                 break;
+        }
+    }
+
+    private function ycubeCreateCron()
+    {
+        /** CRONJOB Setup **/
+        $this->subscribeEvent('Shopware_CronJob_InactArtCron', 'onRunInactArtCron');
+        $this->subscribeEvent('Shopware_CronJob_ActArtCron', 'onRunActArtCron');
+        $this->subscribeEvent('Shopware_CronJob_OrdCron', 'onRunOrdCron');
+        $this->subscribeEvent('Shopware_CronJob_InventCron', 'onRunInventCron');
+
+        $connection = $this->get('dbal_connection');
+
+        //Cronjobname, Controllername, Interval, [active]
+        foreach ($this->aCronDefaultEntries as $action => $name) {
+            if (!$connection->executeQuery("SELECT 1 FROM s_crontab WHERE action = '{$action}'")->fetchColumn()) {
+                $this->createCronJob($name, $action, $this->iDefaultCronInterval, true);
+            }
+        }
+
+        //Create cron for inventory (run once a day)
+        if (!$connection->executeQuery("SELECT 1 FROM s_crontab WHERE action = 'InventCron'")->fetchColumn()) {
+            $oDate = new \DateTime('tomorrow');
+            $sNext = $oDate->format('Y-m-d 06:00:00');
+
+            $connection->insert('s_crontab',
+                [
+                    'name' => 'A-SIGN YC Inventory',
+                    'action' => 'InventCron',
+                    'next' => $sNext,
+                    'start' => null,
+                    '`interval`' => 60 * 60 * 24, // once a day
+                    'active' => 1,
+                    'disable_on_error' => 1,
+                    'end' => $sNext,
+                    'pluginID' => $this->getId(),
+                ], ['next' => 'datetime', 'end' => 'datetime']
+            );
         }
     }
 
