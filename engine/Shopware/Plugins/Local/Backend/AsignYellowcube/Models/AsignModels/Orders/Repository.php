@@ -209,7 +209,12 @@ class Repository extends ModelRepository
         $orderId = $aOrders['ordid'];
 
         // get order article details
-        $aOrders['orderarticles'] = Shopware()->Db()->fetchAll("SELECT `articleID`, `articleordernumber`, `name`, `quantity`, `ean` FROM `s_order_details` WHERE `orderID` = '" . $orderId . "' AND `articleID` <> 0");
+        $sSqlOrderDetails = "SELECT `articleID`, `articleordernumber`, `name`, `quantity`, `ean` FROM `s_order_details` WHERE `orderID` = '" . $orderId . "' AND `articleID` <> 0";
+
+        // ignore vouchers
+        $sSqlOrderDetails .= " AND `modus` = 0";
+
+        $aOrders['orderarticles'] = Shopware()->Db()->fetchAll($sSqlOrderDetails);
 
         return $aOrders;
     }
@@ -286,7 +291,7 @@ class Repository extends ModelRepository
 
                     $orderResource = \Shopware\Components\Api\Manager::getResource('Order');
                     $orderResource->update($ordid, array(
-                        'orderStatusId' => Status::ORDER_STATE_READY_FOR_DELIVERY,
+                        'orderStatusId' => Status::ORDER_STATE_COMPLETED,
                         'trackingCode'  => $sTrackingCode,
                     ));
 
