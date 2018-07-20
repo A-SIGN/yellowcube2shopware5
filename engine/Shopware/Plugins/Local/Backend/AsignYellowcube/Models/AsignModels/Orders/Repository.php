@@ -287,7 +287,7 @@ class Repository extends ModelRepository
 
                 // update tracking code in s_order table
                 if ($mode === 'WAR') {
-                    $sTrackingCode = $aResponseData['WAR']['GoodsIssue']['CustomerOrderHeader']['PostalShipmentNo'];
+                    $sTrackingCode = $aResponseData['WAR'][0]['GoodsIssue']['CustomerOrderHeader']['PostalShipmentNo'];
 
                     $orderResource = \Shopware\Components\Api\Manager::getResource('Order');
                     $orderResource->update($ordid, array(
