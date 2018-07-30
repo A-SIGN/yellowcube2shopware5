@@ -448,17 +448,6 @@ class Shopware_Plugins_Backend_AsignYellowcube_Bootstrap extends Shopware_Compon
 
             // Certificate information only
             $ycForm->setElement('button', 'Certificate', array('label' => 'Certificate Configuration'));
-            $ycForm->setElement('select', 'blYellowCubeCertForAll',
-                array(
-                    'label' => 'Use Certificate for all modes',
-                    'store' => array(
-                        array('1', 'Yes'),
-                        array('0', 'No'),
-                    ),
-                    'value' => '1',
-                )
-            );
-
             $ycForm->setElement('text', 'sYellowCubeCertFile',
                 array(
                     'required'    => 1,

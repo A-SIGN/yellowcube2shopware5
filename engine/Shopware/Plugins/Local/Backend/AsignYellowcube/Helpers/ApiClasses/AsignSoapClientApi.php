@@ -298,7 +298,11 @@ class AsignSoapClientApi
      */
     public function useCertificateForAllModes()
     {
-        return $this->returnConfigParam('blYellowCubeCertForAll');
+        if ($this->getSoapOperatingMode() == 'T') {
+            return false;
+        }
+
+        return true;
     }
 
     /**

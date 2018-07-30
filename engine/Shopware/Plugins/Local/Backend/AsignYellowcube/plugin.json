@@ -4,7 +4,7 @@
     "author"        : "A-SIGN GmbH",
     "copyright"     : "(c) by A-SIGN",
     "support"       : "entwicklung@a-sign.ch",
-    "version"       : "2.1.6",
+    "version"       : "2.1.7",
     "link"          : "https://www.a-sign.ch/",
     "controller"    : "AsignYellowcube",
     "parent"        : "Marketing",

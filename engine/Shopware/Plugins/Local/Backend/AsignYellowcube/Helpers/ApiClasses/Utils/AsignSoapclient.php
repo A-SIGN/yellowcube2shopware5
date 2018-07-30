@@ -106,16 +106,6 @@ class AsignSoapclient extends \SoapClient
     }
 
     /**
-     * Returns true if a certificate should be used.
-     *
-     * @return mixed
-     */
-    protected function useCertificate()
-    {
-        return !empty($this->options['local_cert']);
-    }
-
-    /**
      * Returns content of the certificate passed  in 'local_cert'.
      *
      * @return string Content of the certificate passed  in 'local_cert'.
