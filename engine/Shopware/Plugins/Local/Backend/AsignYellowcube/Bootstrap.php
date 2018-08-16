@@ -281,7 +281,7 @@ class Shopware_Plugins_Backend_AsignYellowcube_Bootstrap extends Shopware_Compon
      *
      * @param Enlight_Event_EventArgs $arguments
      */
-    public function beforeDocumentRender(Enlight_Event_Hooks $arguments)
+    public function beforeDocumentRender(Enlight_Event_EventArgs $arguments)
     {
         $aRenderer = $arguments->get("_renderer");
 
