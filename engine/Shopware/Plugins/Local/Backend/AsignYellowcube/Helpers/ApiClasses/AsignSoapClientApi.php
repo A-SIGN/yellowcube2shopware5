@@ -398,8 +398,9 @@ class AsignSoapClientApi
         // DEBUG: only for checking XML output
         $devMail = $this->getDeveloperEmail();
         if ($devMail != "") {
-            @mail($devMail, "SOAP_REQUEST", print_r($oClient->__getLastRequest(), 1)); // YC request
-            @mail($devMail, "SOAP_RESPONSE", print_r($aResponse, 1)); // YC response
+            @mail($devMail, "SOAP_REQUEST __getLastRequest", print_r($oClient->__getLastRequest(), 1)); // YC request
+            @mail($devMail, 'SOAP_RESPONSE __getLastResponse', print_r($oClient->__getLastResponse(), 1)); // YC response
+            @mail($devMail, 'SOAP_RESPONSE $aResponse', print_r($aResponse, 1)); // YC response
         }
         // END-DEBUG
 
