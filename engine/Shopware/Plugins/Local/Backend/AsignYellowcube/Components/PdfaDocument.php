@@ -171,6 +171,7 @@ class PdfaDocument extends Shopware_Components_Document
             $defaultShop = $repository->getDefault();
             $localISO = $defaultShop->getLocale()->getLocale();
             $shopID = $defaultShop->getId();
+            Shopware()->Models()->clear();
 
             // get Shop owner details: below ids are related to s_core_config_elements
             // and the values are stored in s_core_config_values..

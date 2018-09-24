@@ -165,6 +165,7 @@ class Repository extends ModelRepository
             $sOrdArtQuery = "update `s_order_details` set `tariff` = '" . $aIntHandling['tariff'] . "', `tara` = '" . $aIntHandling['tara'] . "', `origin` = '" . $sCountry . "' where `articleID` = '" . $articleID . "'";
 
             Shopware()->Db()->query($sOrdArtQuery);
+            Shopware()->Models()->clear();
         }
     }
 
