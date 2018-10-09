@@ -181,7 +181,7 @@ class Repository extends ModelRepository
     public function getOrderDetails($iOrdereId, $blDirect = false, $blCron = false)
     {
         // get order details based on query
-        $sSql = "SELECT so.id as ordid, so.ordernumber as ordernumber, so.ordertime as ordertime, so.paymentID as paymentid, so.dispatchID as dispatchid, sob.salutation as sal, sob.company, sob.department, CONCAT(sob.firstname, ' ', sob.lastname) as fullname, sob.street as streetinfo, sob.zipcode as zip, sob.city as city, scc.countryiso as country, su.email as email, spd.comment as shipping, scl.locale as language";
+        $sSql = "SELECT so.id as ordid, so.ordernumber as ordernumber, so.ordertime as ordertime, so.paymentID as paymentid, so.dispatchID as dispatchid, sob.salutation as sal, sob.company, sob.department, CONCAT(sob.firstname, ' ', sob.lastname) as fullname, sob.street as streetinfo, CONCAT(sob.additional_address_line1, ' ', sob.additional_address_line2) as addinfolines, sob.zipcode as zip, sob.city as city, scc.countryiso as country, su.email as email, spd.comment as shipping, scl.locale as language";
         $sSql .= " FROM s_order so";
         $sSql .= " JOIN s_order_shippingaddress sob ON so.id = sob.orderID";
         $sSql .= " JOIN s_core_countries scc ON scc.id = sob.countryID";
