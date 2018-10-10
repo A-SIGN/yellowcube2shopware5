@@ -685,6 +685,32 @@ class Shopware_Plugins_Backend_AsignYellowcube_Bootstrap extends Shopware_Compon
             Shopware()->Db()->query("ALTER TABLE `s_articles` ADD COLUMN `origin` CHAR(10) NOT NULL");
         }
 
+        // check if the `origin` already exists
+        if (!$this->isColumnExistsInTable('s_articles_attributes', 'yc_export')) {
+            /** @var CrudService $crudService */
+            $service = Shopware()->Container()->get('shopware_attribute.crud_service');
+            $service->update('s_articles_attributes', 'yc_export', 'boolean', [
+                'label' => 'Yellowcube Export',
+                'helpText' => 'Check this box if you want export this article to Yellowcube',
+
+                //user has the opportunity to translate the attribute field for each shop
+                'translatable' => true,
+
+                //attribute will be displayed in the backend module
+                'displayInBackend' => true,
+
+                //in case of multi_selection or single_selection type, article entities can be selected,
+                'entity' => 'Shopware\Models\Article\Article',
+
+                //numeric position for the backend view, sorted ascending
+                'position' => 10,
+            ]);
+
+            $metaDataCache = Shopware()->Models()->getConfiguration()->getMetadataCacheImpl();
+            $metaDataCache->deleteAll();
+            Shopware()->Models()->generateAttributeModels(['s_articles_attributes']);
+        }
+
         // check if the `tariff` already exists
         if (!$this->isColumnExistsInTable('s_order_details', 'tariff')) {
             Shopware()->Db()->query("ALTER TABLE `s_order_details` ADD COLUMN `tariff` CHAR(11) NOT NULL DEFAULT ''");

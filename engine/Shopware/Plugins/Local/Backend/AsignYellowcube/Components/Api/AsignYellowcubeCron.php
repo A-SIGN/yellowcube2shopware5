@@ -152,32 +152,32 @@ class AsignYellowcubeCron
     public function autoInsertArticles($sMode, $sFlag, $isCron = false)
     {
         $iCount = 0;
-        $where = '';
+
+        // get all the articles based on above condition...
+        $sSql = "SELECT art.id FROM s_articles AS art";
+        $sSql .= " JOIN s_articles_attributes AS attr ON art.id = attr.articleID";
+        $sSql .= " WHERE attr.yc_export = 1";
 
         // form where condition based on options...
         switch ($sMode) {
             case "ax":
-                $where = ' WHERE active = 1';
+                $sSql .= ' AND art.active = 1';
                 break;
-
             case "ix":
-                $where = ' WHERE active = 0';
+                $sSql .= ' AND art.active = 0';
                 break;
-
             case "xx":
-                $where = ' WHERE 1';
                 break;
         }
 
-        // get all the articles based on above condition...
-        $aArticles = Shopware()->Db()->fetchAll("SELECT `id` FROM `s_articles`" . $where);
+        $aArticles = Shopware()->Db()->fetchAll($sSql);
 
         if (count($aArticles) > 0) {
             foreach ($aArticles as $article) {
 
                 try {
                     $artid = $article['id'];
-                    $aDetails = $this->objProduct->getArticleDetails($article['id'], true);
+                    $aDetails = $this->objProduct->getArticleDetails($article['id'], $isCron);
                     $iStatusCode = $this->getRecordedStatus($artid, 'asign_yellowcube_product');
                     $aResponse = array('success' => false);
 

@@ -40,15 +40,18 @@ class Repository extends ModelRepository
      * @param integer $offset Offset value
      * @param integer $limit Limit value
      *
-     * @return array
+     * @return Zend_Db_Select
      */
     public function getProductsListQuery($filters, $sort, $offset = 0, $limit = 100)
     {
         $select = Shopware()->Db()->select()
             ->from('s_articles', array('artid' => 'id', 'name', 'active', 'tara', 'tariff', 'origin'))
+            ->joinInner('s_articles_attributes', 's_articles.id = s_articles_attributes.articleID', array('yc_export'))
             ->joinLeft('s_articles_details', 's_articles.id = s_articles_details.articleID', array('ordernumber', 'instock', 'active'))
             ->joinLeft('s_articles_esd', 's_articles.id = s_articles_esd.articleID', array('esdid' => 'id'))
             ->joinLeft('asign_yellowcube_product', 'asign_yellowcube_product.artid = s_articles_details.articleID', array('id', 'lastSent', 'ycSpsDetails', 'ycResponse', 'ycReference', 'createDate'));
+
+        $select->where('s_articles_attributes.yc_export = 1');
 
         //If a filter is set
         if ($filters) {
@@ -161,21 +164,14 @@ class Repository extends ModelRepository
      * Returns article data based on artid
      *
      * @param integer $iArticleId article item id
-     * @param bool $isCron if its a CRON
      *
      * @return array $aResult
      */
-    public function getArticleDetails($iArticleId, $isCron = false)
+    public function getArticleDetails($iArticleId)
     {
         $sSql = "SELECT s_articles.name as `name`, s_articles_details.articleID, s_articles_details.weight, s_articles_details.length, s_articles_details.width, s_articles_details.height, s_articles_details.ordernumber, s_articles_details.ean, s_articles_details.instock FROM s_articles";
         $sSql .= " JOIN s_articles_details ON s_articles.id = s_articles_details.articleID";
-        $sSql .= " JOIN asign_yellowcube_product ON s_articles.id = asign_yellowcube_product.artid";
         $sSql .= " WHERE s_articles.id = '" . $iArticleId . "' AND s_articles_details.kind = 1";
-
-        // cron?
-        if ($isCron) {
-            $sSql .= " AND asign_yellowcube_product.ycReference = 0"; // include non-YC response
-        }
 
         $aResult = Shopware()->Db()->fetchRow($sSql);
 
