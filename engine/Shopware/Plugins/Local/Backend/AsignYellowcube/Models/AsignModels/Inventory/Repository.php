@@ -15,6 +15,7 @@
 namespace Shopware\CustomModels\AsignModels\Inventory;
 
 use Shopware\Components\Model\ModelRepository;
+use Shopware\AsignYellowcube\Helpers\ApiClasses\AsignSoapClientApi;
 
 /**
 * Defines repository for Inventory
@@ -86,43 +87,59 @@ class Repository extends ModelRepository
         $iCount = 0;
 
         // reset the inventory data
-        $this->resetInventoryData();
+        $oSoapApi = new AsignSoapClientApi();
+        if ($oSoapApi->getYCResetInventory()) {
+            $this->resetInventoryData();
+        }
 
         foreach ($aResponseData['ArticleList']['Article'] as $aArticle) {
-            $qtyISO  = $aArticle['QuantityUOM']['QuantityISO'];
-            $qtyUOM  = $aArticle['QuantityUOM']['_'];
-            $ycartnr = $aArticle['YCArticleNo'];
-            $artnr   = $aArticle['ArticleNo'];
-            $artdesc = $aArticle['ArticleDescription'];
+            //skip multiple article rows, only location YAFS and type blank is needed
+            if (!empty($aArticle['ArticleNo'] && $aArticle['StorageLocation'] == 'YAFS' && $aArticle['StockType'] == '0')) {
+                $artnr = $aArticle['ArticleNo'];
 
-            // entry id to avoid duplicates
-            $mainId = substr($ycartnr, 4);
+                $sGetArtid = "SELECT s_articles_details.articleID FROM s_articles_details JOIN s_articles_attributes ON s_articles_details.articleID = s_articles_attributes.articleID AND s_articles_attributes.yc_export = 1 WHERE s_articles_details.ordernumber = ?";
+                $artid = Shopware()->Db()->executeQuery($sGetArtid, [$artnr])->fetchColumn();
 
-            // frame the additioanal information array
-            $aAddInfo = array(
-                'EAN'               => $aArticle['EAN'],
-                'Plant'             => $aArticle['Plant'],
-                'StorageLocation'   => $aArticle['StorageLocation'],
-                'StockType'         => $aArticle['StockType'],
-                'QuantityISO'       => $qtyISO,
-                'QuantityUOM'       => $qtyUOM,
-                'YCLot'             => $aArticle['YCLot'],
-                'Lot'               => $aArticle['Lot'],
-                'BestBeforeDate'    => $aArticle['BestBeforeDate'],
-            );
-            // serialize the data
-            $sAdditional = serialize($aAddInfo);
+                // skip if no SW article is found (check yc_export = 1 in article attributes)
+                if (empty($artid)) {
+                    continue;
+                }
 
-            // push in db
-            $sUpdateYCInventory = "INSERT INTO `asign_yellowcube_inventory` SET `id` = '" . $mainId . "', `ycarticlenr` = '".$ycartnr."', `articlenr` = '".$artnr."', `artdesc` = '" . $artdesc . "', `additional` = '" . $sAdditional . "' ON DUPLICATE KEY UPDATE `createdon` = NOW()";
-            Shopware()->Db()->query($sUpdateYCInventory);
+                $qtyISO  = $aArticle['QuantityUOM']['QuantityISO'];
+                $qtyUOM  = $aArticle['QuantityUOM']['_'];
+                $ycartnr = $aArticle['YCArticleNo'];
 
-            //update the stock
-            $iStock = (int) $qtyUOM;
-            $sUpdateArtInventory = "UPDATE `s_articles_details` SET `instock` = '" . $iStock . "' WHERE `ordernumber` = '" . $artnr . "'";
-            Shopware()->Db()->query($sUpdateArtInventory);
+                $artdesc = $aArticle['ArticleDescription'];
 
-            $iCount++;
+                // entry id to avoid duplicates
+                $mainId = substr($ycartnr, 4);
+
+                // frame the additioanal information array
+                $aAddInfo = array(
+                    'EAN'               => $aArticle['EAN'],
+                    'Plant'             => $aArticle['Plant'],
+                    'StorageLocation'   => $aArticle['StorageLocation'],
+                    'StockType'         => $aArticle['StockType'],
+                    'QuantityISO'       => $qtyISO,
+                    'QuantityUOM'       => $qtyUOM,
+                    'YCLot'             => $aArticle['YCLot'],
+                    'Lot'               => $aArticle['Lot'],
+                    'BestBeforeDate'    => $aArticle['BestBeforeDate'],
+                );
+                // serialize the data
+                $sAdditional = serialize($aAddInfo);
+
+                // push in db
+                $sUpdateYCInventory = "INSERT INTO `asign_yellowcube_inventory` SET `id` = '" . $mainId . "', `ycarticlenr` = '".$ycartnr."', `articlenr` = '".$artnr."', `artdesc` = '" . $artdesc . "', `additional` = '" . $sAdditional . "' ON DUPLICATE KEY UPDATE `createdon` = NOW()";
+                Shopware()->Db()->query($sUpdateYCInventory);
+
+                //update the stock
+                $iStock = (int) $qtyUOM;
+                $sUpdateArtInventory = "UPDATE `s_articles_details` SET `instock` = '" . $iStock . "' WHERE `ordernumber` = '" . $artnr . "'";
+                Shopware()->Db()->query($sUpdateArtInventory);
+
+                $iCount++;
+            }
         }
 
         return $iCount;

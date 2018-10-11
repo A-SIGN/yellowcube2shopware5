@@ -459,6 +459,19 @@ class Shopware_Plugins_Backend_AsignYellowcube_Bootstrap extends Shopware_Compon
 
             // Article informations only...
             $ycForm->setElement('button', 'Article', array('label' => 'Article Configuration'));
+
+            $ycForm->setElement('select', 'blYellowCubeResetInventory',
+                array(
+                    'label'       => 'Reset article stock on inventory update',
+                    'description' => 'Yes = Set article stock to 0 for YC articles before updating inventory<br />No = Only update article stocks from YC inventory',
+                    'store'       => array(
+                        array('1', 'Yes'),
+                        array('0', 'No'),
+                    ),
+                    'value' => '0',
+                )
+            );
+
             $ycForm->setElement('text', 'sYellowCubeQuantityISO',
                 array(
                     'required'    => 1,

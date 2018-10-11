@@ -152,6 +152,16 @@ class AsignSoapClientApi
     }
 
     /**
+     * Returns inventory reset setting
+     *
+     * @return string
+     */
+    public function getYCResetInventory()
+    {
+        return $this->returnConfigParam('blYellowCubeResetInventory');
+    }
+
+    /**
      * Returns Quantity ISO value
      *
      * @return string
