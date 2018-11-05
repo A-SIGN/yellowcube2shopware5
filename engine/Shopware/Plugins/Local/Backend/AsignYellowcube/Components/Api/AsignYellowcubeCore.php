@@ -145,29 +145,18 @@ class AsignYellowcubeCore
     /**
      * Inserts article into YC master data
      *
-     * @param array $oArticle Article data
-     * @param string $sFlag Mode i.e. I,U,D
+     * @param object $oRequestData Article data
      *
      * @return array
+     * @throws Exception
      */
-    public function insertArticleMasterData($aArticle, $sFlag)
+    public function insertArticleMasterData($oRequestData)
     {
-        // get the formatted article data
-        $oRequestData = $this->getYCFormattedArticleData($aArticle, $sFlag);
-
-        try {
-            $aResponse = $this->oSoapApi->callFunction("InsertArticleMasterData", $oRequestData);
-            return (array(
-                'success' => true,
-                'data'    => $aResponse,
-            ));
-        } catch (Exception $oEx) {
-            $this->oLogs->saveLogsData('insertArticleMasterData', $oEx);
-            return (array(
-                'success' => false,
-                'message' => $oEx->getMessage(),
-            ));
-        }
+        $aResponse = $this->oSoapApi->callFunction("InsertArticleMasterData", $oRequestData);
+        return (array(
+            'success' => true,
+            'data'    => $aResponse,
+        ));
     }
 
     /**
@@ -243,7 +232,7 @@ class AsignYellowcubeCore
      *
      * @return object
      */
-    protected function getYCFormattedArticleData($aArticle, $sFlag)
+    public function getYCFormattedArticleData($aArticle, $sFlag)
     {
         // define params needed
         $aYCParams = $aArticle['ycparams'];

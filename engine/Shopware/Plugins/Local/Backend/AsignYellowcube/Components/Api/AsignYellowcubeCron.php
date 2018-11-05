@@ -175,6 +175,8 @@ class AsignYellowcubeCron
         if (count($aArticles) > 0) {
             foreach ($aArticles as $article) {
 
+                $oRequestData = new \stdClass();
+
                 try {
                     $artid = $article['id'];
                     $aDetails = $this->objProduct->getArticleDetails($article['id'], $isCron);
@@ -187,7 +189,9 @@ class AsignYellowcubeCron
                         if ($isCron) {
                             echo "Submitting Article for Article-ID: " . $artid . "\n";
                         }
-                        $aResponse = $this->objYcubeCore->insertArticleMasterData($aDetails, $sFlag);
+                        // get the formatted article data
+                        $oRequestData = $this->objYcubeCore->getYCFormattedArticleData($aDetails, $sFlag);
+                        $aResponse = $this->objYcubeCore->insertArticleMasterData($oRequestData);
                     } elseif ($iStatusCode == 10) {
                         // get the status
                         if ($isCron) {
@@ -201,8 +205,16 @@ class AsignYellowcubeCron
                         $this->objProduct->saveArticleResponseData($aResponse['data'], $artid);
                         $iCount++;
                     }
-                } catch (Exception $e) {
-                    $this->objErrorLog->saveLogsData('Articles-CRON', $e);
+                } catch (Exception $oEx) {
+                    $sMessage = 'ArticleNr.: ' . $aDetails['ordernumber'] . ' - ';
+                    $sMessage .= $oEx->getMessage();
+                    if (isset($oRequestData->ArticleList->Article)) {
+                        $oRequestData = $oRequestData->ArticleList->Article;
+                    }
+                    ob_start();
+                    var_dump($oRequestData);
+                    $sDevlog = ob_get_clean();
+                    $this->objErrorLog->saveCustomLogsData('autoInsertArticles', $sMessage, $sDevlog);
                 }
             }
         }

@@ -88,13 +88,29 @@ class Repository extends ModelRepository
     public function saveLogsData($sType, $oError, $isDirect = false)
     {
         if (!$isDirect) {
-            $sMessage = str_replace("'", '"', $oError->getMessage());
-            $sDevlog  = str_replace("'", '"', $oError->__toString());
+            $sMessage = $oError->getMessage();
+            $sDevlog  = $oError->__toString();
         } else {
-            $sMessage = str_replace("'", '"', $oError);
+            $sMessage = $oError;
+            $sDevlog = '';
         }
 
-        $iSql = "INSERT INTO `asign_yellowcube_logs` SET `type` = '" . $sType . "', `message` = '" . $sMessage . "', `devlog` = '" . $sDevlog . "', createdon = CURRENT_TIMESTAMP";
-        Shopware()->Db()->query($iSql);
+        $sSql = "INSERT INTO `asign_yellowcube_logs` SET `type` = ?, `message` = ?, `devlog` = ?, createdon = NOW()";
+        Shopware()->Db()->query($sSql, [$sType, $sMessage, $sDevlog]);
+    }
+
+    /**
+     * Stores logs information when error generated
+     *
+     * @param string $sType Type of error
+     * @param string $sMessage Error message
+     * @param string $sDevlog Extended error log
+     *
+     * @return null
+     */
+    public function saveCustomLogsData($sType, $sMessage, $sDevlog)
+    {
+        $sSql = "INSERT INTO `asign_yellowcube_logs` SET `type` = ?, `message` = ?, `devlog` = ?, createdon = NOW()";
+        Shopware()->Db()->query($sSql, [$sType, $sMessage, $sDevlog]);
     }
 }

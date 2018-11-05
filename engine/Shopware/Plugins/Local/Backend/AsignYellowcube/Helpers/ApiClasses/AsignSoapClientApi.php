@@ -365,7 +365,7 @@ class AsignSoapClientApi
             $aParams = array(
                 'soap_version' => SOAP_1_1,
                 'trace'        => true,
-                'exception'    => true,
+                'exceptions'    => true,
                 'features'     => SOAP_SINGLE_ELEMENT_ARRAYS,
             );
 
