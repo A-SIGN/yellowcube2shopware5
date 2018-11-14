@@ -190,19 +190,28 @@ class Repository extends ModelRepository
 
         if ($aResult) {
             // get translations
-            $aTrans = Shopware()->Db()->fetchRow("SELECT s_articles_translations.name as `altname`, s_articles_translations.languageID, s_core_locales.locale as `altlang` FROM `s_articles_translations` JOIN `s_core_locales` ON s_articles_translations.languageID = s_core_locales.id WHERE s_articles_translations.articleID = '" . $aResult['articleID'] . "'");
+            $sSql = "SELECT s_core_locales.`locale`
+                     FROM `s_core_locales` 
+                     JOIN `s_core_shops` ON  s_core_shops.locale_id = s_core_locales.id
+                     WHERE s_core_shops.id = 1";
 
-            // set multilang value
             $aResult['pronames'][] = array(
-                'lang' => Shopware()->Db()->fetchOne("select `locale` from `s_core_locales` where `id` <> '" . $aResult['languageID'] . "'"),
+                'lang' => Shopware()->Db()->fetchOne($sSql),
                 'name' => $aResult['name'],
             );
 
-            if ($aTrans) {
-                $aResult['pronames'][] = array(
-                    'lang' => $aTrans['altlang'],
-                    'name' => $aTrans['altname'],
-                );
+            // set multilang value
+            $sSQL = "SELECT
+                         s_articles_translations.name as `name`,
+                         s_core_locales.locale as `lang`
+                      FROM `s_articles_translations`
+                      JOIN `s_core_shops` ON s_articles_translations.languageID = s_core_shops.id
+                      JOIN `s_core_locales` ON s_core_shops.locale_id = s_core_locales.id
+                      WHERE s_articles_translations.articleID = ?";
+            $aTranslations = Shopware()->Db()->fetchAll($sSQL, [$aResult['articleID']]);
+
+            if (count($aTranslations)) {
+                $aResult['pronames'] = array_merge($aResult['pronames'], $aTranslations);
             }
 
             return $aResult;
