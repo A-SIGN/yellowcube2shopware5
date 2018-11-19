@@ -201,17 +201,21 @@ class Repository extends ModelRepository
             );
 
             // set multilang value
-            $sSQL = "SELECT
-                         s_articles_translations.name as `name`,
-                         s_core_locales.locale as `lang`
+            $sSql = "SELECT
+                         s_core_locales.locale as `lang`,
+                         s_articles_translations.name as `name`
                       FROM `s_articles_translations`
                       JOIN `s_core_shops` ON s_articles_translations.languageID = s_core_shops.id
                       JOIN `s_core_locales` ON s_core_shops.locale_id = s_core_locales.id
-                      WHERE s_articles_translations.articleID = ?";
-            $aTranslations = Shopware()->Db()->fetchAll($sSQL, [$aResult['articleID']]);
+                      WHERE s_core_shops.active = 1 AND s_articles_translations.articleID = ?";
+            $aTranslations = Shopware()->Db()->fetchAll($sSql, [$aResult['articleID']]);
 
             if (count($aTranslations)) {
-                $aResult['pronames'] = array_merge($aResult['pronames'], $aTranslations);
+                foreach ($aTranslations as $aTranslation) {
+                    if ($aTranslation['name'] != '') {
+                        $aResult['pronames'][] = $aTranslation;
+                    }
+                }
             }
 
             return $aResult;
